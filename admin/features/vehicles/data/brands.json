@@ -1,0 +1,850 @@
+[
+  {
+    "name": "Acura",
+    "image": "/brands/acura.png"
+  },
+  {
+    "name": "Agrale",
+    "image": "/brands/agrale.png"
+  },
+  {
+    "name": "Alfa Romeo",
+    "image": "/brands/alfa_romeo.png"
+  },
+  {
+    "name": "Amazonas",
+    "image": "/brands/amazonas.png"
+  },
+  {
+    "name": "Americar",
+    "image": "/brands/americar.png"
+  },
+  {
+    "name": "Asia",
+    "image": "/brands/asia.png"
+  },
+  {
+    "name": "Aston Martin",
+    "image": "/brands/aston_martin.png"
+  },
+  {
+    "name": "Audi",
+    "image": "/brands/audi.png"
+  },
+  {
+    "name": "Austin-healey",
+    "image": "/brands/austin_healey.png"
+  },
+  {
+    "name": "Auto Gabarito",
+    "image": "/brands/auto_gabarito.png"
+  },
+  {
+    "name": "Avallone",
+    "image": "/brands/avallone.png"
+  },
+  {
+    "name": "Baja",
+    "image": "/brands/baja.png"
+  },
+  {
+    "name": "Beach",
+    "image": "/brands/beach.png"
+  },
+  {
+    "name": "Bentley",
+    "image": "/brands/bentley.png"
+  },
+  {
+    "name": "Bianco",
+    "image": "/brands/bianco.png"
+  },
+  {
+    "name": "Bmw",
+    "image": "/brands/bmw.png"
+  },
+  {
+    "name": "Borgward",
+    "image": "/brands/borgward.png"
+  },
+  {
+    "name": "Brasfibra",
+    "image": "/brands/brasfibra.png"
+  },
+  {
+    "name": "Brm",
+    "image": "/brands/brm.png"
+  },
+  {
+    "name": "Bugatti",
+    "image": "/brands/bugatti.png"
+  },
+  {
+    "name": "Bugre",
+    "image": "/brands/bugre.png"
+  },
+  {
+    "name": "Bugway",
+    "image": "/brands/bugway.png"
+  },
+  {
+    "name": "Buick",
+    "image": "/brands/buick.png"
+  },
+  {
+    "name": "Byd",
+    "image": "/brands/byd.png"
+  },
+  {
+    "name": "Cadillac",
+    "image": "/brands/cadillac.png"
+  },
+  {
+    "name": "Caoa Changan",
+    "image": "/brands/caoa_changan.png"
+  },
+  {
+    "name": "Caoa Chery",
+    "image": "/brands/caoa_chery.png"
+  },
+  {
+    "name": "Cauype",
+    "image": "/brands/cauype.png"
+  },
+  {
+    "name": "Cbt",
+    "image": "/brands/cbt.png"
+  },
+  {
+    "name": "Chamonix",
+    "image": "/brands/chamonix.png"
+  },
+  {
+    "name": "Chana",
+    "image": "/brands/chana.png"
+  },
+  {
+    "name": "Changan",
+    "image": "/brands/changan.png"
+  },
+  {
+    "name": "Cheda",
+    "image": "/brands/cheda.png"
+  },
+  {
+    "name": "Chevrolet",
+    "image": "/brands/chevrolet.png"
+  },
+  {
+    "name": "Chrysler",
+    "image": "/brands/chrysler.png"
+  },
+  {
+    "name": "Citroën",
+    "image": "/brands/citroën.png"
+  },
+  {
+    "name": "Cord",
+    "image": "/brands/cord.png"
+  },
+  {
+    "name": "Coyote",
+    "image": "/brands/coyote.png"
+  },
+  {
+    "name": "Cross Lander",
+    "image": "/brands/cross_lander.png"
+  },
+  {
+    "name": "Dacon",
+    "image": "/brands/dacon.png"
+  },
+  {
+    "name": "Daewoo",
+    "image": "/brands/daewoo.png"
+  },
+  {
+    "name": "Daihatsu",
+    "image": "/brands/daihatsu.png"
+  },
+  {
+    "name": "Datsun",
+    "image": "/brands/datsun.png"
+  },
+  {
+    "name": "De Soto",
+    "image": "/brands/de_soto.png"
+  },
+  {
+    "name": "De Tomaso",
+    "image": "/brands/de_tomaso.png"
+  },
+  {
+    "name": "Delorean",
+    "image": "/brands/delorean.png"
+  },
+  {
+    "name": "Denza",
+    "image": "/brands/denza.png"
+  },
+  {
+    "name": "Dkw-vemag",
+    "image": "/brands/dkw_vemag.png"
+  },
+  {
+    "name": "Dodge",
+    "image": "/brands/dodge.png"
+  },
+  {
+    "name": "Dunnas",
+    "image": "/brands/dunnas.png"
+  },
+  {
+    "name": "Eagle",
+    "image": "/brands/eagle.png"
+  },
+  {
+    "name": "Edsel",
+    "image": "/brands/edsel.png"
+  },
+  {
+    "name": "Effa",
+    "image": "/brands/effa.png"
+  },
+  {
+    "name": "Ego",
+    "image": "/brands/ego.png"
+  },
+  {
+    "name": "Emis",
+    "image": "/brands/emis.png"
+  },
+  {
+    "name": "Engesa",
+    "image": "/brands/engesa.png"
+  },
+  {
+    "name": "Envemo",
+    "image": "/brands/envemo.png"
+  },
+  {
+    "name": "Fargo",
+    "image": "/brands/fargo.png"
+  },
+  {
+    "name": "Farus",
+    "image": "/brands/farus.png"
+  },
+  {
+    "name": "Fercar Buggy",
+    "image": "/brands/fercar_buggy.png"
+  },
+  {
+    "name": "Ferrari",
+    "image": "/brands/ferrari.png"
+  },
+  {
+    "name": "Fever",
+    "image": "/brands/fever.png"
+  },
+  {
+    "name": "Fiat",
+    "image": "/brands/fiat.png"
+  },
+  {
+    "name": "Fibrario",
+    "image": "/brands/fibrario.png"
+  },
+  {
+    "name": "Fibravan",
+    "image": "/brands/fibravan.png"
+  },
+  {
+    "name": "Fisker",
+    "image": "/brands/fisker.png"
+  },
+  {
+    "name": "Fnm",
+    "image": "/brands/fnm.png"
+  },
+  {
+    "name": "Ford",
+    "image": "/brands/ford.png"
+  },
+  {
+    "name": "Foton",
+    "image": "/brands/foton.png"
+  },
+  {
+    "name": "Fyber",
+    "image": "/brands/fyber.png"
+  },
+  {
+    "name": "Gac",
+    "image": "/brands/gac.png"
+  },
+  {
+    "name": "Geely",
+    "image": "/brands/geely.png"
+  },
+  {
+    "name": "Geo",
+    "image": "/brands/geo.png"
+  },
+  {
+    "name": "Giants",
+    "image": "/brands/giants.png"
+  },
+  {
+    "name": "Gmc",
+    "image": "/brands/gmc.png"
+  },
+  {
+    "name": "Grancar",
+    "image": "/brands/grancar.png"
+  },
+  {
+    "name": "Great Wall",
+    "image": "/brands/great_wall.png"
+  },
+  {
+    "name": "Gurgel",
+    "image": "/brands/gurgel.png"
+  },
+  {
+    "name": "Gwm",
+    "image": "/brands/gwm.png"
+  },
+  {
+    "name": "Hafei",
+    "image": "/brands/hafei.png"
+  },
+  {
+    "name": "Hb",
+    "image": "/brands/hb.png"
+  },
+  {
+    "name": "Hofstetter",
+    "image": "/brands/hofstetter.png"
+  },
+  {
+    "name": "Honda",
+    "image": "/brands/honda.png"
+  },
+  {
+    "name": "Hudson",
+    "image": "/brands/hudson.png"
+  },
+  {
+    "name": "Hummer",
+    "image": "/brands/hummer.png"
+  },
+  {
+    "name": "Hupmobile",
+    "image": "/brands/hupmobile.png"
+  },
+  {
+    "name": "Hyundai",
+    "image": "/brands/hyundai.png"
+  },
+  {
+    "name": "Icomda",
+    "image": "/brands/icomda.png"
+  },
+  {
+    "name": "Incofer",
+    "image": "/brands/incofer.png"
+  },
+  {
+    "name": "Ineos",
+    "image": "/brands/ineos.png"
+  },
+  {
+    "name": "Infiniti",
+    "image": "/brands/infiniti.png"
+  },
+  {
+    "name": "International",
+    "image": "/brands/international.png"
+  },
+  {
+    "name": "Isuzu",
+    "image": "/brands/isuzu.png"
+  },
+  {
+    "name": "Iveco",
+    "image": "/brands/iveco.png"
+  },
+  {
+    "name": "Jac",
+    "image": "/brands/jac.png"
+  },
+  {
+    "name": "Jaecoo",
+    "image": "/brands/jaecoo.png"
+  },
+  {
+    "name": "Jaguar",
+    "image": "/brands/jaguar.png"
+  },
+  {
+    "name": "Jeep",
+    "image": "/brands/jeep.png"
+  },
+  {
+    "name": "Jensen",
+    "image": "/brands/jensen.png"
+  },
+  {
+    "name": "Jetour",
+    "image": "/brands/jetour.png"
+  },
+  {
+    "name": "Jinbei",
+    "image": "/brands/jinbei.png"
+  },
+  {
+    "name": "Jonway",
+    "image": "/brands/jonway.png"
+  },
+  {
+    "name": "Jpx",
+    "image": "/brands/jpx.png"
+  },
+  {
+    "name": "Kadron",
+    "image": "/brands/kadron.png"
+  },
+  {
+    "name": "Kaiser",
+    "image": "/brands/kaiser.png"
+  },
+  {
+    "name": "Kia",
+    "image": "/brands/kia.png"
+  },
+  {
+    "name": "Koenigsegg",
+    "image": "/brands/koenigsegg.png"
+  },
+  {
+    "name": "L Automobile",
+    "image": "/brands/l_automobile.png"
+  },
+  {
+    "name": "Lada",
+    "image": "/brands/lada.png"
+  },
+  {
+    "name": "Lamborghini",
+    "image": "/brands/lamborghini.png"
+  },
+  {
+    "name": "Lancia",
+    "image": "/brands/lancia.png"
+  },
+  {
+    "name": "Land Rover",
+    "image": "/brands/land_rover.png"
+  },
+  {
+    "name": "Landwind",
+    "image": "/brands/landwind.png"
+  },
+  {
+    "name": "Leapmotor",
+    "image": "/brands/leapmotor.png"
+  },
+  {
+    "name": "Lecar",
+    "image": "/brands/lecar.png"
+  },
+  {
+    "name": "Lexus",
+    "image": "/brands/lexus.png"
+  },
+  {
+    "name": "Lhm",
+    "image": "/brands/lhm.png"
+  },
+  {
+    "name": "Lifan",
+    "image": "/brands/lifan.png"
+  },
+  {
+    "name": "Lincoln",
+    "image": "/brands/lincoln.png"
+  },
+  {
+    "name": "Lobini",
+    "image": "/brands/lobini.png"
+  },
+  {
+    "name": "Lotus",
+    "image": "/brands/lotus.png"
+  },
+  {
+    "name": "Lucid",
+    "image": "/brands/lucid.png"
+  },
+  {
+    "name": "L´auto Craft",
+    "image": "/brands/l´auto_craft.png"
+  },
+  {
+    "name": "Magnata",
+    "image": "/brands/magnata.png"
+  },
+  {
+    "name": "Mahindra",
+    "image": "/brands/mahindra.png"
+  },
+  {
+    "name": "Marcopolo",
+    "image": "/brands/marcopolo.png"
+  },
+  {
+    "name": "Marina´s",
+    "image": "/brands/marina´s.png"
+  },
+  {
+    "name": "Maserati",
+    "image": "/brands/maserati.png"
+  },
+  {
+    "name": "Matra",
+    "image": "/brands/matra.png"
+  },
+  {
+    "name": "Maybach",
+    "image": "/brands/maybach.png"
+  },
+  {
+    "name": "Mazda",
+    "image": "/brands/mazda.png"
+  },
+  {
+    "name": "Mclaren",
+    "image": "/brands/mclaren.png"
+  },
+  {
+    "name": "Menon",
+    "image": "/brands/menon.png"
+  },
+  {
+    "name": "Mercedes-benz",
+    "image": "/brands/mercedes_benz.png"
+  },
+  {
+    "name": "Mercury",
+    "image": "/brands/mercury.png"
+  },
+  {
+    "name": "Mg",
+    "image": "/brands/mg.png"
+  },
+  {
+    "name": "Mini",
+    "image": "/brands/mini.png"
+  },
+  {
+    "name": "Mitsubishi",
+    "image": "/brands/mitsubishi.png"
+  },
+  {
+    "name": "Miura",
+    "image": "/brands/miura.png"
+  },
+  {
+    "name": "Mobby",
+    "image": "/brands/mobby.png"
+  },
+  {
+    "name": "Morgan",
+    "image": "/brands/morgan.png"
+  },
+  {
+    "name": "Morris",
+    "image": "/brands/morris.png"
+  },
+  {
+    "name": "Mp Lafer",
+    "image": "/brands/mp_lafer.png"
+  },
+  {
+    "name": "Mplm",
+    "image": "/brands/mplm.png"
+  },
+  {
+    "name": "Nash",
+    "image": "/brands/nash.png"
+  },
+  {
+    "name": "Neta",
+    "image": "/brands/neta.png"
+  },
+  {
+    "name": "Newtrack",
+    "image": "/brands/newtrack.png"
+  },
+  {
+    "name": "Nissan",
+    "image": "/brands/nissan.png"
+  },
+  {
+    "name": "Oldsmobile",
+    "image": "/brands/oldsmobile.png"
+  },
+  {
+    "name": "Omoda",
+    "image": "/brands/omoda.png"
+  },
+  {
+    "name": "Opel",
+    "image": "/brands/opel.png"
+  },
+  {
+    "name": "Packard",
+    "image": "/brands/packard.png"
+  },
+  {
+    "name": "Pag",
+    "image": "/brands/pag.png"
+  },
+  {
+    "name": "Pagani",
+    "image": "/brands/pagani.png"
+  },
+  {
+    "name": "Peugeot",
+    "image": "/brands/peugeot.png"
+  },
+  {
+    "name": "Plymouth",
+    "image": "/brands/plymouth.png"
+  },
+  {
+    "name": "Pontiac",
+    "image": "/brands/pontiac.png"
+  },
+  {
+    "name": "Porsche",
+    "image": "/brands/porsche.png"
+  },
+  {
+    "name": "Puma",
+    "image": "/brands/puma.png"
+  },
+  {
+    "name": "Ram",
+    "image": "/brands/ram.png"
+  },
+  {
+    "name": "Rdk",
+    "image": "/brands/rdk.png"
+  },
+  {
+    "name": "Rely",
+    "image": "/brands/rely.png"
+  },
+  {
+    "name": "Renault",
+    "image": "/brands/renault.png"
+  },
+  {
+    "name": "Reno",
+    "image": "/brands/reno.png"
+  },
+  {
+    "name": "Reva-i",
+    "image": "/brands/reva_i.png"
+  },
+  {
+    "name": "Riddara",
+    "image": "/brands/riddara.png"
+  },
+  {
+    "name": "Riley",
+    "image": "/brands/riley.png"
+  },
+  {
+    "name": "Rivian",
+    "image": "/brands/rivian.png"
+  },
+  {
+    "name": "Rolls-royce",
+    "image": "/brands/rolls_royce.png"
+  },
+  {
+    "name": "Romi",
+    "image": "/brands/romi.png"
+  },
+  {
+    "name": "Rover",
+    "image": "/brands/rover.png"
+  },
+  {
+    "name": "Saab",
+    "image": "/brands/saab.png"
+  },
+  {
+    "name": "Santa Matilde",
+    "image": "/brands/santa_matilde.png"
+  },
+  {
+    "name": "Saturn",
+    "image": "/brands/saturn.png"
+  },
+  {
+    "name": "Seat",
+    "image": "/brands/seat.png"
+  },
+  {
+    "name": "Selvagem",
+    "image": "/brands/selvagem.png"
+  },
+  {
+    "name": "Seres",
+    "image": "/brands/seres.png"
+  },
+  {
+    "name": "Shelby",
+    "image": "/brands/shelby.png"
+  },
+  {
+    "name": "Shineray",
+    "image": "/brands/shineray.png"
+  },
+  {
+    "name": "Short",
+    "image": "/brands/short.png"
+  },
+  {
+    "name": "Shuanghuan",
+    "image": "/brands/shuanghuan.png"
+  },
+  {
+    "name": "Simca",
+    "image": "/brands/simca.png"
+  },
+  {
+    "name": "Smart",
+    "image": "/brands/smart.png"
+  },
+  {
+    "name": "Spyker",
+    "image": "/brands/spyker.png"
+  },
+  {
+    "name": "Ssangyong",
+    "image": "/brands/ssangyong.png"
+  },
+  {
+    "name": "Standard",
+    "image": "/brands/standard.png"
+  },
+  {
+    "name": "Studebaker",
+    "image": "/brands/studebaker.png"
+  },
+  {
+    "name": "Subaru",
+    "image": "/brands/subaru.png"
+  },
+  {
+    "name": "Sunbeam",
+    "image": "/brands/sunbeam.png"
+  },
+  {
+    "name": "Suzuki",
+    "image": "/brands/suzuki.png"
+  },
+  {
+    "name": "Tac",
+    "image": "/brands/tac.png"
+  },
+  {
+    "name": "Tander",
+    "image": "/brands/tander.png"
+  },
+  {
+    "name": "Tanger",
+    "image": "/brands/tanger.png"
+  },
+  {
+    "name": "Tesla",
+    "image": "/brands/tesla.png"
+  },
+  {
+    "name": "Toy",
+    "image": "/brands/toy.png"
+  },
+  {
+    "name": "Toyota",
+    "image": "/brands/toyota.png"
+  },
+  {
+    "name": "Triumph",
+    "image": "/brands/triumph.png"
+  },
+  {
+    "name": "Troller",
+    "image": "/brands/troller.png"
+  },
+  {
+    "name": "Unimog",
+    "image": "/brands/unimog.png"
+  },
+  {
+    "name": "Vendetta",
+    "image": "/brands/vendetta.png"
+  },
+  {
+    "name": "Volkswagen",
+    "image": "/brands/volkswagen.png"
+  },
+  {
+    "name": "Volvo",
+    "image": "/brands/volvo.png"
+  },
+  {
+    "name": "Wake",
+    "image": "/brands/wake.png"
+  },
+  {
+    "name": "Walk",
+    "image": "/brands/walk.png"
+  },
+  {
+    "name": "Way Brasil",
+    "image": "/brands/way_brasil.png"
+  },
+  {
+    "name": "Whippet",
+    "image": "/brands/whippet.png"
+  },
+  {
+    "name": "Wiesmann",
+    "image": "/brands/wiesmann.png"
+  },
+  {
+    "name": "Willys",
+    "image": "/brands/willys.png"
+  },
+  {
+    "name": "Willys Overland",
+    "image": "/brands/willys_overland.png"
+  },
+  {
+    "name": "Yangwang",
+    "image": "/brands/yangwang.svg"
+  },
+  {
+    "name": "Zeekr",
+    "image": "/brands/zeekr.png"
+  },
+  {
+    "name": "Zimmer",
+    "image": "/brands/zimmer.png"
+  }
+]
