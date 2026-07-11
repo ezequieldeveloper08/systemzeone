@@ -8,6 +8,9 @@ export class TenantOrmEntity {
   @Column({ unique: true })
   name: string;
 
+  @Column({ name: 'business_type', type: 'varchar', default: 'crm_only' })
+  businessType: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

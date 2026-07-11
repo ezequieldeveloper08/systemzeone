@@ -13,13 +13,14 @@ export class TenantRepository implements ITenantRepository {
   ) {}
 
   private toDomain(orm: TenantOrmEntity): Tenant {
-    return new Tenant(orm.id, orm.name, orm.createdAt, orm.updatedAt);
+    return new Tenant(orm.id, orm.name, orm.businessType, orm.createdAt, orm.updatedAt);
   }
 
   private toOrm(domain: Tenant): TenantOrmEntity {
     const orm = new TenantOrmEntity();
     orm.id = domain.id;
     orm.name = domain.name;
+    orm.businessType = domain.businessType;
     orm.createdAt = domain.createdAt;
     orm.updatedAt = domain.updatedAt;
     return orm;

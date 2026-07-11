@@ -30,7 +30,9 @@ import {
   Database,
   UserCheck,
   Kanban,
-  Calendar
+  Calendar,
+  Utensils,
+  Store
 } from "lucide-react"
 import Image from "next/image"
 
@@ -50,6 +52,9 @@ export function Sidebar() {
 
   // Collapsible menus
   const [catalogOpen, setCatalogOpen] = useState(true)
+  const [realEstateOpen, setRealEstateOpen] = useState(true)
+  const [menuOpen, setMenuOpen] = useState(true)
+  const [digitalShowcaseOpen, setDigitalShowcaseOpen] = useState(true)
   const [whatsappOpen, setWhatsappOpen] = useState(false)
   const [financesOpen, setFinancesOpen] = useState(true)
 
@@ -89,14 +94,17 @@ export function Sidebar() {
   const currentTab = searchParams ? searchParams.get("tab") : null
 
   // Navigation structure
-  const menuItems = [
+  const menuItems: any[] = [
     {
       label: "Início",
       icon: Home,
       href: "/admin/dashboard",
       active: pathname === "/admin/dashboard",
     },
-    {
+  ]
+
+  if (activeTenant.businessType === "veiculos") {
+    menuItems.push({
       label: "Catálogo",
       icon: CarFront,
       isCollapsible: true,
@@ -106,13 +114,46 @@ export function Sidebar() {
         { label: "Todos os Veículos", href: "/admin/vehicles", active: pathname === "/admin/vehicles" },
         { label: "Adicionar Veículo", href: "/admin/vehicles/new", active: pathname === "/admin/vehicles/new" },
       ],
-    },
-    /* {
-      label: "Banco FIPE",
-      icon: Database,
-      href: "/admin/brands",
-      active: pathname === "/admin/brands",
-    }, */
+    })
+  } else if (activeTenant.businessType === "imoveis") {
+    menuItems.push({
+      label: "Imóveis",
+      icon: Home,
+      isCollapsible: true,
+      isOpen: realEstateOpen,
+      setIsOpen: setRealEstateOpen,
+      subItems: [
+        { label: "Todos os Imóveis", href: "/admin/real-estate", active: pathname === "/admin/real-estate" },
+      ],
+    })
+  } else if (activeTenant.businessType === "menu") {
+    menuItems.push({
+      label: "Restaurante",
+      icon: Utensils,
+      isCollapsible: true,
+      isOpen: menuOpen,
+      setIsOpen: setMenuOpen,
+      subItems: [
+        { label: "Gestor de Pedidos", href: "/admin/orders", active: pathname === "/admin/orders" },
+        { label: "Relatórios e Histórico", href: "/admin/orders/history", active: pathname === "/admin/orders/history" },
+        { label: "Mesas e Comandas", href: "/admin/tables", active: pathname === "/admin/tables" },
+        { label: "Gerenciar Itens", href: "/admin/menu", active: pathname === "/admin/menu" },
+      ],
+    })
+  } else if (activeTenant.businessType === "vitrine") {
+    menuItems.push({
+      label: "Vitrine Digital",
+      icon: Store,
+      isCollapsible: true,
+      isOpen: digitalShowcaseOpen,
+      setIsOpen: setDigitalShowcaseOpen,
+      subItems: [
+        { label: "Gerenciar Vitrine", href: "/admin/digital-showcase", active: pathname === "/admin/digital-showcase" },
+      ],
+    })
+  }
+
+  menuItems.push(
     {
       label: "WhatsApp",
       icon: MessageSquare,
@@ -162,20 +203,8 @@ export function Sidebar() {
         { label: "Contas a Receber", href: "/admin/finances?tab=receivables", active: pathname === "/admin/finances" && currentTab === "receivables" },
         { label: "Contas a Pagar", href: "/admin/finances?tab=payables", active: pathname === "/admin/finances" && currentTab === "payables" },
       ],
-    },
-    /* {
-      label: "Métricas",
-      icon: TrendingUp,
-      href: "#",
-      active: pathname === "/admin/analytics",
-    },
-    {
-      label: "Sincronizar FIPE",
-      icon: Sliders,
-      href: "/admin/fipe",
-      active: pathname === "/admin/fipe",
-    }, */
-  ]
+    }
+  )
 
   return (
     <>
@@ -190,7 +219,11 @@ export function Sidebar() {
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="flex flex-col min-w-0 leading-tight">
                 <span className="font-semibold text-xs text-neutral-400 uppercase tracking-wider">
-                  Veículos Multitenant
+                  {activeTenant.businessType === "veiculos" ? "Veículos Multitenant" :
+                   activeTenant.businessType === "imoveis" ? "Imóveis Multitenant" :
+                   activeTenant.businessType === "menu" ? "Cardápio Multitenant" :
+                   activeTenant.businessType === "vitrine" ? "Vitrine Multitenant" :
+                   "SaaS Multitenant"}
                 </span>
                 <span className="font-medium text-sm text-neutral-800 dark:text-neutral-200 truncate">
                   {activeTenant.name}
@@ -204,7 +237,11 @@ export function Sidebar() {
           {tenantDropdownOpen && (
             <div className="absolute top-full left-0 z-30 mt-1.5 w-full rounded-lg border border-neutral-200 bg-white p-1.5 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
               <p className="px-2.5 py-1 text-xs font-semibold text-neutral-400 uppercase">
-                Concessionárias
+                {activeTenant.businessType === "veiculos" ? "Concessionárias" :
+                 activeTenant.businessType === "imoveis" ? "Imobiliárias" :
+                 activeTenant.businessType === "menu" ? "Restaurantes" :
+                 activeTenant.businessType === "vitrine" ? "Lojas" :
+                 "Empresas"}
               </p>
               <div className="max-h-40 overflow-y-auto space-y-0.5 mt-1">
                 {tenants.map((t) => (
@@ -234,7 +271,11 @@ export function Sidebar() {
                 className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm font-medium text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-neutral-800/40"
               >
                 <Plus className="size-4" />
-                Criar Concessionária
+                Criar {activeTenant.businessType === "veiculos" ? "Concessionária" :
+                       activeTenant.businessType === "imoveis" ? "Imobiliária" :
+                       activeTenant.businessType === "menu" ? "Restaurante" :
+                       activeTenant.businessType === "vitrine" ? "Loja" :
+                       "Empresa"}
               </button>
             </div>
           )}
@@ -277,7 +318,7 @@ export function Sidebar() {
 
                   {item.isOpen && (
                     <div className="pl-6.5 space-y-1 border-l border-neutral-200/60 ml-4.5 dark:border-neutral-800/60">
-                      {item.subItems!.map((sub, sIdx) => (
+                      {item.subItems!.map((sub: any, sIdx: number) => (
                         <Link
                           key={sIdx}
                           href={sub.href}

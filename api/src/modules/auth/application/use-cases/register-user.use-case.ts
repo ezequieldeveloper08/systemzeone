@@ -29,6 +29,7 @@ export class RegisterUserUseCase {
     const tenant = new Tenant(
       tenantId,
       dto.tenantName,
+      dto.businessType || 'crm_only',
       new Date(),
       new Date(),
     );

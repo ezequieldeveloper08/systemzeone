@@ -11,7 +11,7 @@ interface AuthContextType {
   tenants: Tenant[]
   loading: boolean
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string, tenantName: string) => Promise<void>
+  register: (name: string, email: string, password: string, tenantName: string, businessType: string) => Promise<void>
   switchTenant: (tenantId: string) => Promise<void>
   createTenant: (name: string) => Promise<void>
   logout: () => void
@@ -44,20 +44,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session.user)
       setActiveTenant(session.activeTenant)
       setTenants(session.tenants)
-      router.push("/admin/vehicles")
+      
+      const bType = session.activeTenant?.businessType
+      if (bType === "veiculos") {
+        router.push("/admin/vehicles")
+      } else if (bType === "imoveis") {
+        router.push("/admin/real-estate")
+      } else if (bType === "menu") {
+        router.push("/admin/menu")
+      } else if (bType === "vitrine") {
+        router.push("/admin/digital-showcase")
+      } else {
+        router.push("/admin/dashboard")
+      }
     } finally {
       setLoading(false)
     }
   }
 
-  const register = async (name: string, email: string, password: string, tenantName: string) => {
+  const register = async (name: string, email: string, password: string, tenantName: string, businessType: string) => {
     setLoading(true)
     try {
-      const session = await authService.register(name, email, password, tenantName)
+      const session = await authService.register(name, email, password, tenantName, businessType)
       setUser(session.user)
       setActiveTenant(session.activeTenant)
       setTenants(session.tenants)
-      router.push("/admin/vehicles")
+      
+      const bType = session.activeTenant?.businessType
+      if (bType === "veiculos") {
+        router.push("/admin/vehicles")
+      } else if (bType === "imoveis") {
+        router.push("/admin/real-estate")
+      } else if (bType === "menu") {
+        router.push("/admin/menu")
+      } else if (bType === "vitrine") {
+        router.push("/admin/digital-showcase")
+      } else {
+        router.push("/admin/dashboard")
+      }
     } finally {
       setLoading(false)
     }

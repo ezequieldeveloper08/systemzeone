@@ -15,6 +15,7 @@ export function RegisterForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [tenantName, setTenantName] = useState("")
+  const [businessType, setBusinessType] = useState("crm_only")
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -24,7 +25,7 @@ export function RegisterForm() {
     setIsSubmitting(true)
 
     try {
-      await register(name, email, password, tenantName)
+      await register(name, email, password, tenantName, businessType)
     } catch (err: any) {
       setError(err.message || "Erro desconhecido ao registrar.")
       setIsSubmitting(false)
@@ -54,7 +55,7 @@ export function RegisterForm() {
           Criar Conta Admin
         </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Registre sua concessionária e configure seu estoque multitenant
+          Registre sua empresa e configure seu painel modular multitenant
         </p>
       </div>
 
@@ -67,18 +68,34 @@ export function RegisterForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="tenantName">Nome da Concessionária (Sua Marca)</Label>
+          <Label htmlFor="tenantName">Nome da Empresa (Sua Marca)</Label>
           <div className="relative">
             <Store className="absolute top-2.5 left-3 size-4 text-neutral-400" />
             <Input
               id="tenantName"
-              placeholder="Ex: Capri Chevrolet, Simovel Veículos..."
+              placeholder="Ex: Capri Veículos, Simovel Imóveis, Burger Shop..."
               value={tenantName}
               onChange={(e) => setTenantName(e.target.value)}
               className="pl-9"
               required
             />
           </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="businessType">Segmento de Negócio</Label>
+          <select
+            id="businessType"
+            value={businessType}
+            onChange={(e) => setBusinessType(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950 dark:ring-offset-neutral-950 dark:focus-visible:ring-neutral-300"
+          >
+            <option value="crm_only">Apenas CRM (Padrão)</option>
+            <option value="veiculos">Concessionária / Garagem (Veículos)</option>
+            <option value="imoveis">Imobiliária (Imóveis)</option>
+            <option value="menu">Restaurante (Cardápio)</option>
+            <option value="vitrine">Loja / Comércio (Vitrine Digital)</option>
+          </select>
         </div>
 
         <div className="space-y-1.5">

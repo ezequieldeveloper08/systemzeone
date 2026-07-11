@@ -10,6 +10,11 @@ import { FipeModule } from './modules/fipe/fipe.module';
 import { TeamModule } from './modules/team/team.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { CrmModule } from './modules/crm/crm.module';
+import { RealEstateModule } from './modules/real-estate/real-estate.module';
+import { MenuModule } from './modules/menu/menu.module';
+import { DigitalShowcaseModule } from './modules/digital-showcase/digital-showcase.module';
+import { OrderModule } from './modules/order/order.module';
+import { TableModule } from './modules/table/table.module';
 
 @Module({
   imports: [
@@ -31,6 +36,11 @@ import { CrmModule } from './modules/crm/crm.module';
     CrmModule,
     TeamModule,
     FinanceModule,
+    RealEstateModule,
+    MenuModule,
+    DigitalShowcaseModule,
+    OrderModule,
+    TableModule,
   ],
   controllers: [AppController],
   providers: [AppService],

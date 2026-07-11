@@ -36,12 +36,13 @@ export const authService = {
       throw new Error(errorData.message || "Erro ao realizar login.")
     }
 
-    const data = await response.json() // { accessToken: string, user: { id, name, email, tenantId } }
+    const data = await response.json() // { accessToken: string, user: { id, name, email, tenantId }, tenant: { id, name, businessType } }
 
     const activeTenant: Tenant = {
-      id: data.user.tenantId,
-      name: "Concessionária Principal",
-      slug: "concessionaria-principal",
+      id: data.tenant?.id || data.user.tenantId,
+      name: data.tenant?.name || "Concessionária Principal",
+      slug: data.tenant?.name ? data.tenant.name.toLowerCase().replace(/\s+/g, "-") : "concessionaria-principal",
+      businessType: data.tenant?.businessType || "veiculos",
       cnpj: "00.000.000/0001-00",
       address: "Endereço da Concessionária",
     }
@@ -62,13 +63,13 @@ export const authService = {
     return session
   },
 
-  async register(name: string, email: string, password: string, tenantName: string): Promise<AuthSession> {
+  async register(name: string, email: string, password: string, tenantName: string, businessType: string): Promise<AuthSession> {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, email, password, tenantName }),
+      body: JSON.stringify({ name, email, password, tenantName, businessType }),
     })
 
     if (!response.ok) {

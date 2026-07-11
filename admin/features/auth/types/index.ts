@@ -9,6 +9,7 @@ export interface Tenant {
   id: string
   name: string
   slug: string
+  businessType?: string
   logoUrl?: string
   cnpj?: string
   address?: string

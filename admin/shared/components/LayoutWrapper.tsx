@@ -33,7 +33,16 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     <div className="min-h-svh bg-neutral-50/30 dark:bg-neutral-950/10">
       <Sidebar />
       <div className="pl-72">
-        <main className={path === "/admin/whatsapp/chat" || path === "/admin/whatsapp/flows/create" || path?.startsWith("/admin/whatsapp/flows/create/") ? "" : "mx-auto max-w-6xl px-8 py-8 animate-in fade-in duration-200"}>
+        <main className={
+          path === "/admin/whatsapp/chat" ||
+          path === "/admin/whatsapp/flows/create" ||
+          path?.startsWith("/admin/whatsapp/flows/create/") ||
+          path === "/admin/orders" ||
+          path === "/admin/pipeline" ||
+          path === "/admin/tables"
+            ? "px-8 py-8 animate-in fade-in duration-200"
+            : "mx-auto max-w-6xl px-8 py-8 animate-in fade-in duration-200"
+        }>
           {children}
         </main>
       </div>

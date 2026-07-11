@@ -18,4 +18,8 @@ export class RegisterDto {
   @ApiProperty({ example: 'Capri Chevrolet', description: 'Nome da Concessionária (Tenant)' })
   @IsString()
   tenantName: string;
+
+  @ApiProperty({ example: 'veiculos', description: 'Tipo de negócio (Ex: veiculos, imoveis, menu, vitrine, crm_only)', required: false })
+  @IsString()
+  businessType?: string;
 }
