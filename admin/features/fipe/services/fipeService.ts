@@ -10,7 +10,7 @@ const getSessionHeaders = (): Record<string, string> => {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${session.token}`,
       "x-tenant-id": String(session.activeTenant?.id || ""),
-      "ngrok-skip-browser-warning": "true",
+      "ngrok-skip-browser-warning": "1",
       "Bypass-Tunnel-Reminder": "true",
     }
   } catch {
