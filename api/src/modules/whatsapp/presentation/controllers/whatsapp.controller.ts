@@ -30,6 +30,8 @@ import { SendFlowMessageDto } from '../dtos/send-flow-message.dto';
 import { PauseAiUseCase } from '../../application/use-cases/pause-ai.use-case';
 import { ResumeAiUseCase } from '../../application/use-cases/resume-ai.use-case';
 import { RevokeWhatsappMessageUseCase } from '../../application/use-cases/revoke-whatsapp-message.use-case';
+import { ExchangeMetaCodeUseCase } from '../../application/use-cases/exchange-meta-code.use-case';
+import { ExchangeCodeDto } from '../dtos/exchange-code.dto';
 
 @ApiTags('WhatsApp Business API')
 @ApiBearerAuth()
@@ -63,6 +65,7 @@ export class WhatsappController {
     private readonly pauseAiUseCase: PauseAiUseCase,
     private readonly resumeAiUseCase: ResumeAiUseCase,
     private readonly revokeMessageUseCase: RevokeWhatsappMessageUseCase,
+    private readonly exchangeMetaCodeUseCase: ExchangeMetaCodeUseCase,
   ) {}
 
   @Get('settings')
@@ -78,6 +81,15 @@ export class WhatsappController {
     @Body() dto: SaveSettingsDto,
   ) {
     return this.saveSettingsUseCase.execute(tenantId, dto);
+  }
+
+  @Post('embedded-signup')
+  @ApiOperation({ summary: 'Trocar código de autenticação do Embedded Signup da Meta e registrar WABA' })
+  async connectEmbeddedSignup(
+    @CurrentTenant() tenantId: string,
+    @Body() dto: ExchangeCodeDto,
+  ) {
+    return this.exchangeMetaCodeUseCase.execute(tenantId, dto.code);
   }
 
   @Get('templates')

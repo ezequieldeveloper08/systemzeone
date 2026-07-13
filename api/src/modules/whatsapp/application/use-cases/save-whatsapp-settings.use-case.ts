@@ -14,10 +14,10 @@ export class SaveWhatsappSettingsUseCase {
   async execute(
     tenantId: string,
     data: {
-      accessToken: string;
-      phoneNumberId: string;
-      businessAccountId: string;
-      webhookVerifyToken: string;
+      accessToken?: string;
+      phoneNumberId?: string;
+      businessAccountId?: string;
+      webhookVerifyToken?: string;
       aiEnabled?: boolean;
       aiApiKey?: string;
       aiAgentInstructions?: string;
@@ -30,10 +30,10 @@ export class SaveWhatsappSettingsUseCase {
     const isMock = !data.accessToken || data.accessToken.startsWith('mock');
 
     if (settings) {
-      settings.accessToken = data.accessToken;
-      settings.phoneNumberId = data.phoneNumberId;
-      settings.businessAccountId = data.businessAccountId;
-      settings.webhookVerifyToken = data.webhookVerifyToken;
+      settings.accessToken = data.accessToken || '';
+      settings.phoneNumberId = data.phoneNumberId || '';
+      settings.businessAccountId = data.businessAccountId || '';
+      settings.webhookVerifyToken = data.webhookVerifyToken || '';
       settings.status = isMock ? 'disconnected' : 'connected';
       if (data.aiEnabled !== undefined) settings.aiEnabled = data.aiEnabled;
       if (data.aiApiKey !== undefined) settings.aiApiKey = data.aiApiKey;
@@ -44,10 +44,10 @@ export class SaveWhatsappSettingsUseCase {
       settings = new WhatsappSettings(
         crypto.randomUUID(),
         tenantId,
-        data.accessToken,
-        data.phoneNumberId,
-        data.businessAccountId,
-        data.webhookVerifyToken,
+        data.accessToken || '',
+        data.phoneNumberId || '',
+        data.businessAccountId || '',
+        data.webhookVerifyToken || '',
         isMock ? 'disconnected' : 'connected',
         new Date(),
         new Date(),

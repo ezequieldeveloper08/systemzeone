@@ -34,6 +34,7 @@ import { WhatsappWebhookController } from './presentation/controllers/whatsapp-w
 import { PauseAiUseCase } from './application/use-cases/pause-ai.use-case';
 import { ResumeAiUseCase } from './application/use-cases/resume-ai.use-case';
 import { RevokeWhatsappMessageUseCase } from './application/use-cases/revoke-whatsapp-message.use-case';
+import { ExchangeMetaCodeUseCase } from './application/use-cases/exchange-meta-code.use-case';
 
 import { CrmModule } from '../crm/crm.module';
 import { VehicleModule } from '../vehicle/vehicle.module';
@@ -86,6 +87,7 @@ import { OrderModule } from '../order/order.module';
     PauseAiUseCase,
     ResumeAiUseCase,
     RevokeWhatsappMessageUseCase,
+    ExchangeMetaCodeUseCase,
   ],
   controllers: [WhatsappController, WhatsappWebhookController],
   exports: [IWhatsappRepositoryToken],

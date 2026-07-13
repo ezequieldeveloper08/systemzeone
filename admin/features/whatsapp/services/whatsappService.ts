@@ -449,4 +449,35 @@ export const whatsappService = {
       throw new Error(errData?.message || "Erro ao revogar mensagem.")
     }
   },
+
+  async connectEmbeddedSignup(code: string): Promise<WhatsappConfig> {
+    const response = await fetch(`${API_BASE_URL}/whatsapp/embedded-signup`, {
+      method: "POST",
+      headers: getSessionHeaders(),
+      body: JSON.stringify({ code }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || "Erro ao conectar conta Meta.")
+    }
+
+    const data = await response.json()
+    return {
+      phoneNumberId: data.phoneNumberId || "",
+      businessAccountId: data.businessAccountId || "",
+      accessToken: data.accessToken || "",
+      webhookVerificationToken: data.webhookVerifyToken || "capri_verify_token_2026",
+      webhookUrl: `${API_BASE_URL}/whatsapp/webhook`,
+      isEnabled: data.status === "connected",
+      status: data.status || "disconnected",
+      lastVerifiedAt: data.updatedAt || new Date().toISOString(),
+      aiEnabled: data.aiEnabled || false,
+      aiApiKey: data.aiApiKey || "",
+      aiAgentInstructions: data.aiAgentInstructions || "",
+      aiModel: data.aiModel || "gemini-2.0-flash",
+      aiPausedPhones: data.aiPausedPhones || [],
+      aiActiveTools: data.aiActiveTools || [],
+    }
+  },
 }

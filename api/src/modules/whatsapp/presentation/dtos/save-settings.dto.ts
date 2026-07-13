@@ -2,25 +2,25 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
 export class SaveSettingsDto {
-  @ApiProperty({ example: 'EAAOa2e...', description: 'Token de acesso permanente do desenvolvedor Meta Cloud' })
+  @ApiProperty({ example: 'EAAOa2e...', description: 'Token de acesso permanente do desenvolvedor Meta Cloud', required: false })
   @IsString()
-  @IsNotEmpty()
-  accessToken: string;
+  @IsOptional()
+  accessToken?: string;
 
-  @ApiProperty({ example: '109283749827349', description: 'ID do Número de Telefone' })
+  @ApiProperty({ example: '109283749827349', description: 'ID do Número de Telefone', required: false })
   @IsString()
-  @IsNotEmpty()
-  phoneNumberId: string;
+  @IsOptional()
+  phoneNumberId?: string;
 
-  @ApiProperty({ example: '298374982374982', description: 'ID da Conta do WhatsApp Business (WABA)' })
+  @ApiProperty({ example: '298374982374982', description: 'ID da Conta do WhatsApp Business (WABA)', required: false })
   @IsString()
-  @IsNotEmpty()
-  businessAccountId: string;
+  @IsOptional()
+  businessAccountId?: string;
 
-  @ApiProperty({ example: 'capri_verify_token_2026', description: 'Token de Verificação do Webhook' })
+  @ApiProperty({ example: 'capri_verify_token_2026', description: 'Token de Verificação do Webhook', required: false })
   @IsString()
-  @IsNotEmpty()
-  webhookVerifyToken: string;
+  @IsOptional()
+  webhookVerifyToken?: string;
 
   @ApiProperty({ example: false, required: false })
   @IsBoolean()
