@@ -129,6 +129,7 @@ const getSessionHeaders = (): Record<string, string> => {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${session.token}`,
       "x-tenant-id": String(session.activeTenant?.id || ""),
+      "ngrok-skip-browser-warning": "true",
     }
   } catch {
     return {}
@@ -156,7 +157,7 @@ export const vehicleService = {
     if (data.length === 0) {
       console.log("Seeding initial vehicles for tenant...", tenantId)
       const seeded: Vehicle[] = []
-      
+
       // Determine which mock data to seed based on current tenant name/id
       const isMobShop = tenantId === "t-2"
       const seedSource = INITIAL_VEHICLES.filter(
