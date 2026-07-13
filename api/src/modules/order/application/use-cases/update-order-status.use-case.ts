@@ -16,11 +16,14 @@ export class UpdateOrderStatusDto {
   paymentMethod?: string;
 }
 
+import { RealTimeService } from '../../../realtime/realtime.service';
+
 @Injectable()
 export class UpdateOrderStatusUseCase {
   constructor(
     @Inject(IOrderRepositoryToken)
     private readonly orderRepository: IOrderRepository,
+    private readonly realTimeService: RealTimeService,
   ) {}
 
   async execute(tenantId: string, id: string, dto: UpdateOrderStatusDto): Promise<Order> {
@@ -33,6 +36,12 @@ export class UpdateOrderStatusUseCase {
     if (dto.paymentMethod !== undefined) {
       order.paymentMethod = dto.paymentMethod || null;
     }
-    return this.orderRepository.save(order);
+    const saved = await this.orderRepository.save(order);
+    
+    // Notify client tracking and admin dashboards
+    this.realTimeService.emitToOrder(id, 'order-status-changed', saved);
+    this.realTimeService.emitToTenant(tenantId, 'order-updated', saved);
+
+    return saved;
   }
 }

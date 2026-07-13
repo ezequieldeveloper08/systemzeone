@@ -13,7 +13,21 @@ export class TenantRepository implements ITenantRepository {
   ) {}
 
   private toDomain(orm: TenantOrmEntity): Tenant {
-    return new Tenant(orm.id, orm.name, orm.businessType, orm.createdAt, orm.updatedAt);
+    return new Tenant(
+      orm.id,
+      orm.name,
+      orm.businessType,
+      orm.createdAt,
+      orm.updatedAt,
+      orm.logo,
+      orm.banner,
+      orm.bio,
+      orm.phone,
+      orm.address,
+      orm.openingHours,
+      orm.instagram,
+      orm.facebook,
+    );
   }
 
   private toOrm(domain: Tenant): TenantOrmEntity {
@@ -21,6 +35,14 @@ export class TenantRepository implements ITenantRepository {
     orm.id = domain.id;
     orm.name = domain.name;
     orm.businessType = domain.businessType;
+    orm.logo = domain.logo;
+    orm.banner = domain.banner;
+    orm.bio = domain.bio;
+    orm.phone = domain.phone;
+    orm.address = domain.address;
+    orm.openingHours = domain.openingHours;
+    orm.instagram = domain.instagram;
+    orm.facebook = domain.facebook;
     orm.createdAt = domain.createdAt;
     orm.updatedAt = domain.updatedAt;
     return orm;
@@ -32,6 +54,10 @@ export class TenantRepository implements ITenantRepository {
     return this.toDomain(saved);
   }
 
+  async save(tenant: Tenant): Promise<Tenant> {
+    return this.create(tenant);
+  }
+
   async findById(id: string): Promise<Tenant | null> {
     const orm = await this.ormRepository.findOneBy({ id });
     return orm ? this.toDomain(orm) : null;
@@ -40,5 +66,10 @@ export class TenantRepository implements ITenantRepository {
   async findByName(name: string): Promise<Tenant | null> {
     const orm = await this.ormRepository.findOneBy({ name });
     return orm ? this.toDomain(orm) : null;
+  }
+
+  async findAll(): Promise<Tenant[]> {
+    const orms = await this.ormRepository.find();
+    return orms.map((orm) => this.toDomain(orm));
   }
 }

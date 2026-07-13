@@ -48,6 +48,7 @@ export const whatsappService = {
       aiAgentInstructions: data.aiAgentInstructions || "",
       aiModel: data.aiModel || "gemini-2.0-flash",
       aiPausedPhones: data.aiPausedPhones || [],
+      aiActiveTools: data.aiActiveTools || [],
     }
   },
 
@@ -64,6 +65,7 @@ export const whatsappService = {
         aiApiKey: config.aiApiKey,
         aiAgentInstructions: config.aiAgentInstructions,
         aiModel: config.aiModel,
+        aiActiveTools: config.aiActiveTools,
       }),
     })
 

@@ -138,6 +138,7 @@ export function Sidebar() {
         { label: "Relatórios e Histórico", href: "/admin/orders/history", active: pathname === "/admin/orders/history" },
         { label: "Mesas e Comandas", href: "/admin/tables", active: pathname === "/admin/tables" },
         { label: "Gerenciar Itens", href: "/admin/menu", active: pathname === "/admin/menu" },
+        { label: "Configuração da Loja", href: "/admin/menu/settings", active: pathname === "/admin/menu/settings" },
       ],
     })
   } else if (activeTenant.businessType === "vitrine") {

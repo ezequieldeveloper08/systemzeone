@@ -22,6 +22,7 @@ export class SaveWhatsappSettingsUseCase {
       aiApiKey?: string;
       aiAgentInstructions?: string;
       aiModel?: string;
+      aiActiveTools?: string[];
     },
   ): Promise<WhatsappSettings> {
     let settings = await this.whatsappRepository.findSettingsByTenantId(tenantId);
@@ -38,6 +39,7 @@ export class SaveWhatsappSettingsUseCase {
       if (data.aiApiKey !== undefined) settings.aiApiKey = data.aiApiKey;
       if (data.aiAgentInstructions !== undefined) settings.aiAgentInstructions = data.aiAgentInstructions;
       if (data.aiModel !== undefined) settings.aiModel = data.aiModel;
+      if (data.aiActiveTools !== undefined) settings.aiActiveTools = data.aiActiveTools;
     } else {
       settings = new WhatsappSettings(
         crypto.randomUUID(),
@@ -54,6 +56,7 @@ export class SaveWhatsappSettingsUseCase {
         data.aiAgentInstructions || 'Você é um assistente virtual atencioso para nossa concessionária de veículos. Responda de forma profissional, simpática e prestativa.',
         data.aiModel || 'gemini-2.0-flash',
         [],
+        data.aiActiveTools || [],
       );
     }
 

@@ -45,6 +45,7 @@ interface ChatMessage {
   status?: "sent" | "delivered" | "read" | "failed"
   messageType?: "text" | "template" | "image" | "document" | "interactive" | "audio"
   variables?: Record<string, string>
+  errorMessage?: string | null
 }
 
 interface ChatContact {
@@ -617,6 +618,7 @@ export function WhatsappChat() {
         status: m.status,
         messageType: m.messageType,
         variables: m.variables,
+        errorMessage: m.errorMessage,
       }))
       setActiveChatMessages(mappedMessages)
     } catch (err) {
@@ -660,6 +662,53 @@ export function WhatsappChat() {
       setActiveChatMessages([])
     }
   }, [selectedChatPhone])
+
+  // Real-time SSE synchronization for WhatsApp messages
+  useEffect(() => {
+    if (!activeTenant?.id) return
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+    const eventSource = new EventSource(`${API_BASE_URL}/realtime/sse?tenantId=${activeTenant.id}`)
+
+    eventSource.addEventListener("whatsapp-message", (event: MessageEvent) => {
+      try {
+        const msg = JSON.parse(event.data)
+        
+        // 1. Silent loadChats to update last message/unread count on contacts sidebar
+        loadChats(true)
+
+        // 2. Append message dynamically if it's the currently active chat
+        if (selectedChatPhone) {
+          const cleanMsgPhone = msg.recipientPhone.replace(/\D/g, "")
+          const cleanSelectedPhone = selectedChatPhone.replace(/\D/g, "")
+          
+          if (cleanMsgPhone === cleanSelectedPhone) {
+            const newMsg: ChatMessage = {
+              id: msg.id,
+              sender: msg.messageDirection === "inbound" ? "lead" : "agent",
+              text: msg.bodyText,
+              time: new Date(msg.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+              status: msg.status,
+              messageType: msg.messageType,
+              variables: msg.variables,
+              errorMessage: msg.errorMessage,
+            }
+            
+            setActiveChatMessages((prev) => {
+              if (prev.some((m) => m.id === newMsg.id)) return prev
+              return [...prev, newMsg]
+            })
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao receber mensagem via SSE:", e)
+      }
+    })
+
+    return () => {
+      eventSource.close()
+    }
+  }, [activeTenant, selectedChatPhone])
 
   // Fetch CRM contact when active chat changes
   useEffect(() => {
@@ -1477,9 +1526,11 @@ export function WhatsappChat() {
                   <div className={`relative group max-w-[70%] rounded-xl px-4 py-2.5 shadow-3xs ${
                     isDeleted
                       ? "bg-neutral-100 text-neutral-500 border border-neutral-200 dark:bg-neutral-900/50 dark:text-neutral-400 dark:border-neutral-800/80"
-                      : isLead
-                        ? "bg-white text-neutral-800 border border-neutral-200/50 dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-800"
-                        : "bg-emerald-500 text-neutral-950 dark:bg-emerald-500"
+                      : m.status === "failed"
+                        ? "bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/55 dark:text-rose-200"
+                        : isLead
+                          ? "bg-white text-neutral-800 border border-neutral-200/50 dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-800"
+                          : "bg-emerald-500 text-neutral-950 dark:bg-emerald-500"
                   }`}>
                     {/* Trash/Revoke Button for outbound messages */}
                     {!isLead && !isDeleted && (
@@ -1624,7 +1675,15 @@ export function WhatsappChat() {
                         return <p className="text-xs leading-relaxed break-words whitespace-pre-wrap">{m.text}</p>
                       })()
                     ) : (
-                      <p className="text-xs leading-relaxed break-words whitespace-pre-wrap">{m.text}</p>
+                      <div className="space-y-1">
+                        {m.status === "failed" && (
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-450">
+                            <AlertCircle className="size-3.5 shrink-0" />
+                            {m.variables?.sentBy === "ai" ? "Falha no Processamento da IA" : "Falha no Envio"}
+                          </div>
+                        )}
+                        <p className="text-xs leading-relaxed break-words whitespace-pre-wrap">{m.text}</p>
+                      </div>
                     )}
                     {m.variables?.flowResponse && !isDeleted && (
                       <button
@@ -1660,6 +1719,11 @@ export function WhatsappChat() {
                       )}
                       {!isLead && !isDeleted && m.status === "sent" && (
                         <span className="text-[10px]">✓</span>
+                      )}
+                      {!isLead && !isDeleted && m.status === "failed" && (
+                        <span title={m.errorMessage || "Erro"} className="flex shrink-0">
+                          <AlertCircle className="size-3.5 text-rose-500" />
+                        </span>
                       )}
                     </div>
                   </div>

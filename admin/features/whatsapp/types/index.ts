@@ -12,6 +12,7 @@ export interface WhatsappConfig {
   aiAgentInstructions?: string
   aiModel?: string
   aiPausedPhones: string[]
+  aiActiveTools?: string[]
 }
 
 export type TemplateStatus = "PENDING" | "APPROVED" | "REJECTED"

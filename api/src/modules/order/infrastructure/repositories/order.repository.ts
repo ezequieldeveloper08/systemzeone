@@ -62,6 +62,11 @@ export class OrderRepository implements IOrderRepository {
     return orm ? this.toDomain(orm) : null;
   }
 
+  async findByIdPublic(id: string): Promise<Order | null> {
+    const orm = await this.ormRepository.findOneBy({ id });
+    return orm ? this.toDomain(orm) : null;
+  }
+
   async findAll(tenantId: string, status?: string): Promise<Order[]> {
     const where: any = { tenantId };
     if (status) {

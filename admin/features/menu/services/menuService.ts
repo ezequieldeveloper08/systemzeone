@@ -8,10 +8,14 @@ const INITIAL_MENU_ITEMS: Omit<MenuItem, "id" | "createdAt" | "updatedAt">[] = [
     name: "Burger Monster Bacon",
     description: "Hambúrguer com blend de costela 180g, muito queijo cheddar derretido, cebola caramelizada e fatias crocantes de bacon no pão brioche.",
     category: "hambúrgueres",
-    price: 42.0,
+    categoryItemId: null,
+    categoryItem: null,
     status: "published",
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80",
-    choiceGroups: [],
+    variations: [
+      { id: "", name: "Único", price: 42.0, enabled: true, order: 0 }
+    ],
+    choices: [],
     menuId: null,
   },
   {
@@ -19,10 +23,14 @@ const INITIAL_MENU_ITEMS: Omit<MenuItem, "id" | "createdAt" | "updatedAt">[] = [
     name: "Pizza Margherita Especial",
     description: "Molho de tomate artesanal, muçarela de búfala fresca, tomate cereja, pesto de manjericão e finalizada com azeite trufado.",
     category: "pizzas",
-    price: 65.0,
+    categoryItemId: null,
+    categoryItem: null,
     status: "published",
     image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&auto=format&fit=crop&q=80",
-    choiceGroups: [],
+    variations: [
+      { id: "", name: "Único", price: 65.0, enabled: true, order: 0 }
+    ],
+    choices: [],
     menuId: null,
   },
   {
@@ -30,10 +38,14 @@ const INITIAL_MENU_ITEMS: Omit<MenuItem, "id" | "createdAt" | "updatedAt">[] = [
     name: "Petit Gâteau com Sorvete",
     description: "Bolo quente de chocolate belga com recheio cremoso e escorrendo, acompanhado de uma bola de sorvete de baunilha artesanal.",
     category: "sobremesas",
-    price: 26.0,
+    categoryItemId: null,
+    categoryItem: null,
     status: "published",
     image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800&auto=format&fit=crop&q=80",
-    choiceGroups: [],
+    variations: [
+      { id: "", name: "Único", price: 26.0, enabled: true, order: 0 }
+    ],
+    choices: [],
     menuId: null,
   }
 ]

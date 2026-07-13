@@ -122,7 +122,7 @@ export class WhatsappRepository implements IWhatsappRepository {
   }
 
   private toSettingsDomain(orm: WhatsappSettingsOrmEntity): WhatsappSettings {
-    return new WhatsappSettings(
+    const domain = new WhatsappSettings(
       orm.id,
       orm.tenantId,
       orm.accessToken,
@@ -137,7 +137,12 @@ export class WhatsappRepository implements IWhatsappRepository {
       orm.aiAgentInstructions,
       orm.aiModel,
       orm.aiPausedPhones || [],
+      orm.aiActiveTools || [],
     );
+    if (orm.tenant) {
+      (domain as any).businessType = orm.tenant.businessType;
+    }
+    return domain;
   }
 
   private toSettingsOrm(domain: WhatsappSettings): WhatsappSettingsOrmEntity {
@@ -156,6 +161,7 @@ export class WhatsappRepository implements IWhatsappRepository {
     orm.aiAgentInstructions = domain.aiAgentInstructions;
     orm.aiModel = domain.aiModel;
     orm.aiPausedPhones = domain.aiPausedPhones || [];
+    orm.aiActiveTools = domain.aiActiveTools || [];
     return orm;
   }
 
@@ -237,12 +243,18 @@ export class WhatsappRepository implements IWhatsappRepository {
 
   // Settings
   async findSettingsByTenantId(tenantId: string): Promise<WhatsappSettings | null> {
-    const orm = await this.settingsRepository.findOneBy({ tenantId });
+    const orm = await this.settingsRepository.findOne({
+      where: { tenantId },
+      relations: { tenant: true },
+    });
     return orm ? this.toSettingsDomain(orm) : null;
   }
 
   async findSettingsByPhoneNumberId(phoneNumberId: string): Promise<WhatsappSettings | null> {
-    const orm = await this.settingsRepository.findOneBy({ phoneNumberId });
+    const orm = await this.settingsRepository.findOne({
+      where: { phoneNumberId },
+      relations: { tenant: true },
+    });
     return orm ? this.toSettingsDomain(orm) : null;
   }
 

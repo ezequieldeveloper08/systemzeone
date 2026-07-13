@@ -12,6 +12,7 @@ export interface ListOrdersFilters {
 export interface IOrderRepository {
   save(order: Order): Promise<Order>;
   findById(tenantId: string, id: string): Promise<Order | null>;
+  findByIdPublic(id: string): Promise<Order | null>;
   findAll(tenantId: string, status?: string): Promise<Order[]>;
   findWithFilters(tenantId: string, filters: ListOrdersFilters): Promise<{ items: Order[]; total: number }>;
   delete(tenantId: string, id: string): Promise<void>;

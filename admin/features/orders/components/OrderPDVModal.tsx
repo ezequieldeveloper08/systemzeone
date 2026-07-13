@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useMenu } from "../../menu/hooks/useMenu"
 import { useTables } from "../../tables/hooks/useTables"
-import { MenuItem, ChoiceGroup, ChoiceOption } from "../../menu/types"
+import { MenuItem, MenuItemVariation, Choice, ChoiceItem, ChoiceItemVariation } from "../../menu/types"
 import { OrderItem, Order } from "../types"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -63,7 +63,8 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
 
   // Options Pop-up State
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null)
-  const [tempOptions, setTempOptions] = useState<{ [groupName: string]: ChoiceOption[] }>({})
+  const [selectedVariation, setSelectedVariation] = useState<any>(null)
+  const [tempOptions, setTempOptions] = useState<{ [groupName: string]: any[] }>({})
   const [optionErrors, setOptionErrors] = useState<{ [groupName: string]: string }>({})
 
   // Unique category list
@@ -79,33 +80,35 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
 
   // Handle adding a menu item
   const handleAddItemClick = (item: MenuItem) => {
-    if (item.choiceGroups && item.choiceGroups.length > 0) {
+    const hasChoices = item.choices && item.choices.length > 0
+    const hasMultipleVariations = item.variations && item.variations.length > 1
+
+    if (hasChoices || hasMultipleVariations) {
       // Open customization modal
       setCustomizingItem(item)
+      setSelectedVariation(item.variations?.[0] || null)
       // Reset temp selections
       const initialTemp: typeof tempOptions = {}
-      item.choiceGroups.forEach((g) => {
-        initialTemp[g.name] = []
-      })
+      if (item.choices) {
+        item.choices.forEach((g) => {
+          initialTemp[g.name] = []
+        })
+      }
       setTempOptions(initialTemp)
       setOptionErrors({})
     } else {
       // Direct add to cart
-      addToCartDirect(item, [])
+      addToCartDirect(item, [], item.variations?.[0] || null)
     }
   }
 
-  const addToCartDirect = (item: MenuItem, selectedOptions: CartItem["selectedOptions"]) => {
-    // Generate a unique key based on selected options to group duplicates properly
-    const optionsKey = selectedOptions
-      .map((o) => `${o.groupName}:${o.optionName}`)
-      .sort()
-      .join("|")
-    const uniqueKey = `${item.id}-${optionsKey}`
-
-    const basePrice = item.price
-    const optionsTotal = selectedOptions.reduce((acc, opt) => acc + opt.price, 0)
-    const itemPrice = basePrice + optionsTotal
+  const addToCartDirect = (item: MenuItem, selectedOptions: CartItem["selectedOptions"], variation?: any) => {
+    const activeVar = variation || item.variations?.[0]
+    const basePrice = activeVar ? activeVar.price : 0
+    const optionsKey = selectedOptions.map((o) => `${o.groupName}:${o.optionName}`).sort().join("|")
+    const uniqueKey = `${item.id}-${activeVar?.name || "Unico"}-${optionsKey}`
+    const itemPrice = basePrice + selectedOptions.reduce((acc, opt) => acc + opt.price, 0)
+    const displayName = `${item.name}${activeVar && activeVar.name !== "Único" ? ` (${activeVar.name})` : ""}`
 
     setCart((prev) => {
       const existing = prev.find((i) => i.uniqueKey === uniqueKey)
@@ -116,7 +119,7 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
           ...prev,
           {
             menuItemId: item.id,
-            name: item.name,
+            name: displayName,
             price: itemPrice,
             quantity: 1,
             selectedOptions,
@@ -128,10 +131,10 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
   }
 
   // Handle option checkbox/radio change
-  const handleOptionSelect = (group: ChoiceGroup, option: ChoiceOption, isRadio: boolean) => {
+  const handleOptionSelect = (group: Choice, option: ChoiceItem, isRadio: boolean) => {
     setTempOptions((prev) => {
       const currentSelections = prev[group.name] || []
-      let newSelections: ChoiceOption[] = []
+      let newSelections: any[] = []
 
       if (isRadio) {
         newSelections = [option]
@@ -144,7 +147,6 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
           if (currentSelections.length < group.maxChoices) {
             newSelections = [...currentSelections, option]
           } else {
-            // Replace first or just don't allow
             newSelections = [...currentSelections.slice(1), option]
           }
         }
@@ -171,10 +173,15 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
 
     // Validate selections
     const errors: typeof optionErrors = {}
-    customizingItem.choiceGroups.forEach((g) => {
+
+    if (!selectedVariation && customizingItem.variations && customizingItem.variations.length > 0) {
+      errors["variation"] = "Selecione uma variação/tamanho"
+    }
+
+    customizingItem.choices?.forEach((g) => {
       const selections = tempOptions[g.name] || []
-      if (g.required && selections.length < g.minChoices) {
-        errors[g.name] = `Selecione pelo menos ${g.minChoices} opção(ões).`
+      if (g.minChoices > 0 && selections.length < g.minChoices) {
+        errors[g.name] = `Selecione no mínimo ${g.minChoices} opção(ões).`
       }
     })
 
@@ -190,13 +197,14 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
         selectedOptionsList.push({
           groupName,
           optionName: opt.name,
-          price: opt.price,
+          price: opt.variations?.[0]?.additionalPrice || 0,
         })
       })
     })
 
-    addToCartDirect(customizingItem, selectedOptionsList)
+    addToCartDirect(customizingItem, selectedOptionsList, selectedVariation)
     setCustomizingItem(null)
+    setSelectedVariation(null)
   }
 
   // Cart actions
@@ -362,9 +370,9 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
                         </div>
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-xs font-extrabold text-neutral-900 dark:text-neutral-50">
-                            R$ {item.price.toFixed(2)}
+                            R$ {(item.variations?.[0]?.price || 0).toFixed(2)}
                           </span>
-                          {item.choiceGroups && item.choiceGroups.length > 0 && (
+                          {item.choices && item.choices.length > 0 && (
                             <span className="text-[9px] font-bold text-orange-600 bg-orange-50 px-1 py-0.2 rounded-sm dark:bg-orange-950/20 dark:text-orange-400">
                               Opcionais
                             </span>
@@ -618,22 +626,42 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
                 <div>
                   <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-50">{customizingItem.name}</h3>
                   <p className="text-xs text-neutral-400 mt-0.5">{customizingItem.description}</p>
-                  <p className="text-xs font-extrabold text-neutral-900 dark:text-neutral-50 mt-1">
-                    Preço Base: R$ {customizingItem.price.toFixed(2)}
-                  </p>
                 </div>
               </div>
 
               {/* Choice Groups List */}
               <div className="flex-1 overflow-y-auto py-4 space-y-5 my-1 pr-1 min-h-0">
-                {customizingItem.choiceGroups.map((group) => {
+                {/* Variations Selection */}
+                {customizingItem.variations && customizingItem.variations.length > 1 && (
+                  <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50/30 dark:border-neutral-800 dark:bg-neutral-900/10">
+                    <p className="text-sm font-bold text-neutral-800 dark:text-neutral-200 mb-2">Tamanho / Opção *</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {customizingItem.variations.map((v) => (
+                        <div
+                          key={v.id}
+                          onClick={() => setSelectedVariation(v)}
+                          className={`flex items-center justify-between p-2.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
+                            selectedVariation?.id === v.id
+                              ? "border-neutral-900 bg-neutral-950/5 text-neutral-900 dark:border-neutral-100 dark:bg-neutral-900 dark:text-white"
+                              : "border-neutral-200 bg-white hover:bg-neutral-50/50 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-400 dark:hover:bg-neutral-900/50"
+                          }`}
+                        >
+                          <span>{v.name}</span>
+                          <span className="font-bold">R$ {v.price.toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {customizingItem.choices?.map((group) => {
                   const isRadio = group.maxChoices === 1 && group.minChoices === 1
                   const selectedCount = (tempOptions[group.name] || []).length
                   const hasError = !!optionErrors[group.name]
 
                   return (
                     <div
-                      key={group.name}
+                      key={group.id}
                       className={`p-4 rounded-xl border transition-all ${
                         hasError
                           ? "border-red-300 bg-red-50/20 dark:border-red-900/40"
@@ -650,22 +678,23 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
                               : `Escolha de ${group.minChoices} a ${group.maxChoices} opções`}
                           </p>
                         </div>
-                        {group.required && (
+                        {group.minChoices > 0 && (
                           <span className="text-[9px] font-extrabold text-red-600 bg-red-50 px-2 py-0.5 rounded-sm dark:bg-red-950/35 dark:text-red-400">
-                            Obrigatorio
+                            Obrigatório
                           </span>
                         )}
                       </div>
 
                       {/* Options */}
                       <div className="mt-3 space-y-2">
-                        {group.options.map((opt) => {
-                          const isSelected = (tempOptions[group.name] || []).some((o) => o.name === opt.name)
+                        {group.choiceItems?.map((ci) => {
+                          const isSelected = (tempOptions[group.name] || []).some((o) => o.name === ci.name)
+                          const itemPrice = ci.variations?.[0]?.additionalPrice || 0
 
                           return (
                             <div
-                              key={opt.name}
-                              onClick={() => handleOptionSelect(group, opt, isRadio)}
+                              key={ci.id}
+                              onClick={() => handleOptionSelect(group, ci, isRadio)}
                               className={`flex items-center justify-between p-2.5 rounded-lg border text-xs font-semibold cursor-pointer transition-all ${
                                 isSelected
                                   ? "border-neutral-900 bg-neutral-950/5 text-neutral-900 dark:border-neutral-100 dark:bg-neutral-900 dark:text-white"
@@ -678,10 +707,10 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
                                 }`}>
                                   {isSelected && <Check className="size-3" />}
                                 </span>
-                                <span>{opt.name}</span>
+                                <span>{ci.name}</span>
                               </div>
-                              {opt.price > 0 && (
-                                <span className="font-bold text-neutral-800 dark:text-neutral-200">+ R$ {opt.price.toFixed(2)}</span>
+                              {itemPrice > 0 && (
+                                <span className="font-bold text-neutral-800 dark:text-neutral-200">+ R$ {itemPrice.toFixed(2)}</span>
                               )}
                             </div>
                           )
@@ -704,10 +733,10 @@ export function OrderPDVModal({ onClose, onSubmit }: OrderPDVModalProps) {
                 <div className="text-xs text-neutral-500 dark:text-neutral-400">
                   Total item: <strong className="text-sm font-extrabold text-neutral-950 dark:text-neutral-50">
                     R$ {(
-                      customizingItem.price +
+                      (selectedVariation?.price || customizingItem.variations?.[0]?.price || 0) +
                       Object.values(tempOptions)
                         .flat()
-                        .reduce((acc, o) => acc + o.price, 0)
+                        .reduce((acc, o) => acc + (o.variations?.[0]?.additionalPrice || 0), 0)
                     ).toFixed(2)}
                   </strong>
                 </div>

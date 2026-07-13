@@ -18,7 +18,8 @@ import {
   Coffee,
   Calendar,
   X,
-  ShoppingCart
+  ShoppingCart,
+  Printer
 } from "lucide-react"
 import { OrderPDVModal } from "./OrderPDVModal"
 
@@ -35,6 +36,16 @@ export function OrderBoard() {
       setFinalizePaymentMethod(selectedOrder.paymentMethod || "Dinheiro")
     }
   }, [selectedOrder])
+
+  // Sync selectedOrder with real-time updates from orders array
+  useEffect(() => {
+    if (selectedOrder) {
+      const updated = orders.find((o) => o.id === selectedOrder.id)
+      if (updated) {
+        setSelectedOrder(updated)
+      }
+    }
+  }, [orders, selectedOrder])
 
   // Filter orders by status
   const pendingOrders = orders.filter((o) => o.status === "pending")
@@ -493,11 +504,22 @@ export function OrderBoard() {
 
             {/* Modal Header */}
             <div className="space-y-2.5 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                  Pedido #{selectedOrder.id.slice(0, 8)}
-                </span>
-                {getDeliveryBadge(selectedOrder.deliveryType)}
+              <div className="flex items-center justify-between pr-8">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
+                    Pedido #{selectedOrder.id.slice(0, 8)}
+                  </span>
+                  {getDeliveryBadge(selectedOrder.deliveryType)}
+                </div>
+                <Button
+                  onClick={() => window.print()}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2.5 text-xs flex gap-1.5 items-center border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                >
+                  <Printer className="size-3.5" />
+                  Imprimir
+                </Button>
               </div>
               <div className="flex justify-between items-end">
                 <div>
@@ -530,7 +552,7 @@ export function OrderBoard() {
                         {item.quantity}x {item.name}
                       </span>
                       <span className="font-extrabold text-neutral-900 dark:text-neutral-50">
-                        R$ {item.price.toFixed(2)}
+                        R$ {(item.price || 0).toFixed(2)}
                       </span>
                     </div>
 
@@ -542,7 +564,7 @@ export function OrderBoard() {
                             <span>
                               {opt.groupName}: <strong className="font-semibold">{opt.optionName}</strong>
                             </span>
-                            {opt.price > 0 && <span>+ R$ {opt.price.toFixed(2)}</span>}
+                            {(opt.price || 0) > 0 && <span>+ R$ {(opt.price || 0).toFixed(2)}</span>}
                           </div>
                         ))}
                       </div>
@@ -711,6 +733,91 @@ export function OrderBoard() {
             } catch {}
           }}
         />
+      )}
+
+      {/* ─── HIDDEN THERMAL RECEIPT PRINT AREA ─── */}
+      {selectedOrder && (
+        <div id="thermal-receipt-print-area">
+          <div style={{ textAlign: "center", marginBottom: "4px" }}>
+            <h2 style={{ fontSize: "30px", fontWeight: "bold", margin: "0" }}>ZE ONE RESTAURANTE</h2>
+            <p style={{ margin: "2px 0", fontSize: "19px" }}>CNPJ: 00.000.000/0001-00</p>
+            <p style={{ margin: "2px 0", fontSize: "19px" }}>Telefone: (11) 99999-9999</p>
+            <p style={{ margin: "4px 0", borderBottom: "1px dashed #000" }}></p>
+            <h3 style={{ fontSize: "23px", fontWeight: "bold", margin: "2px 0" }}>
+              CUPOM DE PEDIDO #{selectedOrder.id.slice(0, 8).toUpperCase()}
+            </h3>
+            <p style={{ fontSize: "19px", margin: "2px 0" }}>
+              Data: {new Date(selectedOrder.createdAt).toLocaleString("pt-BR")}
+            </p>
+          </div>
+
+          <div style={{ fontSize: "20px", margin: "6px 0", lineBreak: "anywhere" }}>
+            <strong>Cliente:</strong> {selectedOrder.customerName}<br />
+            <strong>Telefone:</strong> {selectedOrder.customerPhone}<br />
+            <strong>Entrega:</strong> {selectedOrder.deliveryType === "delivery" ? "Delivery" : selectedOrder.deliveryType === "table" ? `Mesa ${selectedOrder.tableNumber}` : "Retirada"}<br />
+            {selectedOrder.deliveryType === "delivery" && (
+              <><strong>Endereço:</strong> {selectedOrder.address}<br /></>
+            )}
+          </div>
+
+          <p style={{ margin: "4px 0", borderBottom: "1px dashed #000" }}></p>
+
+          <table style={{ width: "100%", fontSize: "20px", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px dashed #000" }}>
+                <th style={{ textAlign: "left", paddingBottom: "2px" }}>Qtd Item</th>
+                <th style={{ textAlign: "right", paddingBottom: "2px" }}>Preço</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedOrder.items.map((item, idx) => (
+                <React.Fragment key={idx}>
+                  <tr>
+                    <td style={{ paddingTop: "4px", fontWeight: "bold" }}>
+                      {item.quantity}x {item.name}
+                    </td>
+                    <td style={{ paddingTop: "4px", textAlign: "right", fontWeight: "bold" }}>
+                      R$ {((item.price || 0) * item.quantity).toFixed(2)}
+                    </td>
+                  </tr>
+                  {item.selectedOptions && item.selectedOptions.length > 0 && (
+                    <tr>
+                      <td colSpan={2} style={{ paddingLeft: "10px", fontSize: "18px", color: "#000", fontWeight: "600" }}>
+                        {item.selectedOptions.map((opt, oIdx) => (
+                          <div key={oIdx}>
+                            + {opt.groupName}: {opt.optionName} {(opt.price || 0) > 0 ? `(+R$ ${(opt.price || 0).toFixed(2)})` : ""}
+                          </div>
+                        ))}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+
+          <p style={{ margin: "6px 0", borderBottom: "1px dashed #000" }}></p>
+
+          <div style={{ fontSize: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>Total do Pedido:</span>
+              <strong>R$ {selectedOrder.totalPrice.toFixed(2)}</strong>
+            </div>
+            {selectedOrder.paymentMethod && (
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "2px" }}>
+                <span>Pagamento:</span>
+                <strong>{selectedOrder.paymentMethod}</strong>
+              </div>
+            )}
+          </div>
+
+          <p style={{ margin: "8px 0", borderBottom: "1px dashed #000" }}></p>
+
+          <div style={{ textAlign: "center", fontSize: "19px", marginTop: "4px" }}>
+            <strong>Obrigado pelo seu pedido!</strong><br />
+            Volte sempre.
+          </div>
+        </div>
       )}
     </div>
   )

@@ -14,5 +14,6 @@ export class WhatsappSettings {
     public aiAgentInstructions: string | null = null,
     public aiModel: string = 'gemini-2.0-flash',
     public aiPausedPhones: string[] = [],
+    public aiActiveTools: string[] = [],
   ) {}
 }

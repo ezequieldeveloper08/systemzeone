@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useMenu } from "../hooks/useMenu"
-import { ChoiceGroup, ChoiceOption } from "../types"
+import { MenuItem, MenuItemVariation, Choice, ChoiceItem, ChoiceItemVariation } from "../types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -57,10 +57,12 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("hambúrgueres")
-  const [price, setPrice] = useState<number>(0)
   const [image, setImage] = useState("")
   const [status, setStatus] = useState<"published" | "hidden">("published")
-  const [choiceGroups, setChoiceGroups] = useState<ChoiceGroup[]>([])
+  const [variations, setVariations] = useState<MenuItemVariation[]>([
+    { id: "", name: "Único", price: 0, enabled: true, order: 0 }
+  ])
+  const [choices, setChoices] = useState<Choice[]>([])
   const [menuId, setMenuId] = useState("")
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,64 +89,104 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
           setName(item.name)
           setDescription(item.description)
           setCategory(item.category)
-          setPrice(item.price)
           setImage(item.image || "")
           setStatus(item.status)
-          setChoiceGroups(item.choiceGroups || [])
+          setVariations(item.variations && item.variations.length > 0 ? item.variations : [{ id: "", name: "Único", price: 0, enabled: true, order: 0 }])
+          setChoices(item.choices || [])
           setMenuId(item.menuId || "")
         }
       }).catch(() => setError("Erro ao carregar dados do prato."))
     }
   }, [isEdit, menuItemId, getMenuItemById])
 
-  // Choice Groups Actions
-  const addChoiceGroup = () => {
-    const newGroup: ChoiceGroup = {
+  // Variations Actions
+  const addVariation = () => {
+    const newVar: MenuItemVariation = {
+      id: "",
       name: "",
-      required: false,
+      price: 0,
+      enabled: true,
+      order: variations.length
+    }
+    setVariations([...variations, newVar])
+  }
+
+  const removeVariation = (index: number) => {
+    setVariations(variations.filter((_, idx) => idx !== index))
+  }
+
+  const updateVariationField = (index: number, field: keyof MenuItemVariation, value: any) => {
+    const updated = [...variations]
+    updated[index] = {
+      ...updated[index],
+      [field]: value
+    }
+    setVariations(updated)
+  }
+
+  // Choices Actions
+  const addChoice = () => {
+    const newChoice: Choice = {
+      id: "",
+      name: "",
+      choiceType: 1,
       minChoices: 0,
       maxChoices: 1,
-      options: []
+      choiceItems: []
     }
-    setChoiceGroups([...choiceGroups, newGroup])
+    setChoices([...choices, newChoice])
   }
 
-  const removeChoiceGroup = (groupIndex: number) => {
-    setChoiceGroups(choiceGroups.filter((_, idx) => idx !== groupIndex))
+  const removeChoice = (index: number) => {
+    setChoices(choices.filter((_, idx) => idx !== index))
   }
 
-  const updateGroupField = (groupIndex: number, field: keyof ChoiceGroup, value: any) => {
-    const updated = [...choiceGroups]
-    updated[groupIndex] = {
-      ...updated[groupIndex],
+  const updateChoiceField = (index: number, field: keyof Choice, value: any) => {
+    const updated = [...choices]
+    updated[index] = {
+      ...updated[index],
       [field]: value
     }
-    setChoiceGroups(updated)
+    setChoices(updated)
   }
 
-  const addOptionToGroup = (groupIndex: number) => {
-    const updated = [...choiceGroups]
-    const newOption: ChoiceOption = {
+  const addChoiceItem = (choiceIndex: number) => {
+    const updated = [...choices]
+    const newItem: ChoiceItem = {
+      id: "",
       name: "",
-      price: 0
+      enabled: true,
+      order: updated[choiceIndex].choiceItems.length,
+      variations: [
+        { id: "", additionalPrice: 0, variationId: null }
+      ]
     }
-    updated[groupIndex].options = [...updated[groupIndex].options, newOption]
-    setChoiceGroups(updated)
+    updated[choiceIndex].choiceItems = [...updated[choiceIndex].choiceItems, newItem]
+    setChoices(updated)
   }
 
-  const removeOptionFromGroup = (groupIndex: number, optionIndex: number) => {
-    const updated = [...choiceGroups]
-    updated[groupIndex].options = updated[groupIndex].options.filter((_, idx) => idx !== optionIndex)
-    setChoiceGroups(updated)
+  const removeChoiceItem = (choiceIndex: number, itemIndex: number) => {
+    const updated = [...choices]
+    updated[choiceIndex].choiceItems = updated[choiceIndex].choiceItems.filter((_, idx) => idx !== itemIndex)
+    setChoices(updated)
   }
 
-  const updateOptionField = (groupIndex: number, optionIndex: number, field: keyof ChoiceOption, value: any) => {
-    const updated = [...choiceGroups]
-    updated[groupIndex].options[optionIndex] = {
-      ...updated[groupIndex].options[optionIndex],
-      [field]: value
+  const updateChoiceItemName = (choiceIndex: number, itemIndex: number, value: string) => {
+    const updated = [...choices]
+    updated[choiceIndex].choiceItems[itemIndex].name = value
+    setChoices(updated)
+  }
+
+  const updateChoiceItemPrice = (choiceIndex: number, itemIndex: number, value: number) => {
+    const updated = [...choices]
+    if (!updated[choiceIndex].choiceItems[itemIndex].variations) {
+      updated[choiceIndex].choiceItems[itemIndex].variations = []
     }
-    setChoiceGroups(updated)
+    if (updated[choiceIndex].choiceItems[itemIndex].variations.length === 0) {
+      updated[choiceIndex].choiceItems[itemIndex].variations.push({ id: "", additionalPrice: 0, variationId: null })
+    }
+    updated[choiceIndex].choiceItems[itemIndex].variations[0].additionalPrice = value
+    setChoices(updated)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,22 +201,28 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
       return
     }
 
+    if (variations.length === 0) {
+      setError("Cadastre pelo menos um preço/variação para o produto.")
+      setIsSubmitting(false)
+      return
+    }
+
     const payload = {
       name,
       description,
       category,
-      price: Number(price),
       image: image || null,
       status,
-      choiceGroups,
+      variations,
+      choices,
       menuId: menuId || null
     }
 
     try {
       if (isEdit && menuItemId) {
-        await updateMenuItem(menuItemId, payload)
+        await updateMenuItem(menuItemId, payload as any)
       } else {
-        await createMenuItem(payload)
+        await createMenuItem(payload as any)
       }
       router.push("/admin/menu")
     } catch (err: any) {
@@ -228,37 +276,20 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="category">Categoria</Label>
-                <select
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full h-10 px-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
-                >
-                  <option value="hambúrgueres">Hambúrgueres</option>
-                  <option value="pizzas">Pizzas</option>
-                  <option value="sobremesas">Sobremesas</option>
-                  <option value="bebidas">Bebidas</option>
-                  <option value="entradas">Entradas</option>
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="price">Preço Padrão</Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-2.5 size-4 text-neutral-400" />
-                  <Input
-                    id="price"
-                    type="text"
-                    className="pl-8"
-                    placeholder="R$ 0,00"
-                    value={formatCurrencyBRL(price)}
-                    onChange={(e) => setPrice(parseCurrencyBRL(e.target.value))}
-                    required
-                  />
-                </div>
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="category">Categoria</Label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
+              >
+                <option value="hambúrgueres">Hambúrgueres</option>
+                <option value="pizzas">Pizzas</option>
+                <option value="sobremesas">Sobremesas</option>
+                <option value="bebidas">Bebidas</option>
+                <option value="entradas">Entradas</option>
+              </select>
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <Label htmlFor="description">Descrição/Ingredientes</Label>
@@ -363,6 +394,64 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
           </div>
         </div>
 
+        {/* SECTION: VARIATIONS & PRICES */}
+        <div className="p-6 rounded-2xl border border-neutral-200 bg-white/60 dark:border-neutral-800 dark:bg-neutral-900/60 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+              <DollarSign className="size-5 text-neutral-400" />
+              Preços e Variações (Tamanhos/Opções)
+            </h3>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addVariation}
+              className="flex items-center gap-1.5 text-xs h-8 border-dashed"
+            >
+              <PlusCircle className="size-4 text-neutral-500" />
+              Nova Variação
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {variations.map((v, idx) => (
+              <div key={idx} className="flex gap-4 items-center animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex-1 space-y-1">
+                  <Label className="text-[10px] font-semibold text-neutral-400 uppercase">Nome da Variação (Ex: Único, Broto, Grande)</Label>
+                  <Input
+                    placeholder="Ex: Único, Média, 1 Litro"
+                    value={v.name}
+                    onChange={(e) => updateVariationField(idx, "name", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="w-48 space-y-1">
+                  <Label className="text-[10px] font-semibold text-neutral-400 uppercase font-bold">Preço</Label>
+                  <div className="relative">
+                    <span className="absolute left-2.5 top-2.5 text-[10px] text-neutral-400 font-bold">R$</span>
+                    <Input
+                      type="text"
+                      placeholder="Valor"
+                      value={formatCurrencyBRL(v.price)}
+                      onChange={(e) => updateVariationField(idx, "price", parseCurrencyBRL(e.target.value))}
+                      className="pl-7"
+                      required
+                    />
+                  </div>
+                </div>
+                {variations.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeVariation(idx)}
+                    className="text-neutral-400 hover:text-red-500 transition-colors p-1 mt-5"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* SECTION 2: iFOOD CHOICE GROUPS */}
         <div className="p-6 rounded-2xl border border-neutral-200 bg-white/60 dark:border-neutral-800 dark:bg-neutral-900/60 shadow-xs space-y-6">
           <div className="flex items-center justify-between">
@@ -373,7 +462,7 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={addChoiceGroup}
+              onClick={addChoice}
               className="flex items-center gap-1.5 text-xs h-8 border-dashed"
             >
               <PlusCircle className="size-4 text-neutral-500" />
@@ -381,20 +470,20 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
             </Button>
           </div>
 
-          {choiceGroups.length === 0 ? (
+          {choices.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-neutral-200 rounded-xl dark:border-neutral-800 text-xs text-neutral-400">
               Nenhum grupo de escolhas configurado. Este prato não terá opcionais.
             </div>
           ) : (
             <div className="space-y-6">
-              {choiceGroups.map((group, gIdx) => (
+              {choices.map((group, gIdx) => (
                 <div
                   key={gIdx}
                   className="p-5 rounded-xl border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 relative space-y-4 animate-in fade-in zoom-in-95 duration-150"
                 >
                   <button
                     type="button"
-                    onClick={() => removeChoiceGroup(gIdx)}
+                    onClick={() => removeChoice(gIdx)}
                     className="absolute top-4 right-4 text-neutral-400 hover:text-red-500 transition-colors p-1"
                   >
                     <Trash2 className="size-4" />
@@ -407,41 +496,31 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
                       <Input
                         placeholder="Ex: Escolha o ponto da carne, Adicionais, Bebida..."
                         value={group.name}
-                        onChange={(e) => updateGroupField(gIdx, "name", e.target.value)}
+                        onChange={(e) => updateChoiceField(gIdx, "name", e.target.value)}
                         required
                       />
                     </div>
                     {/* Min Choices */}
-                    <div className="md:col-span-2 space-y-1">
+                    <div className="md:col-span-3 space-y-1">
                       <Label className="text-[11px] font-semibold text-neutral-400 uppercase">Mínimo</Label>
                       <Input
                         type="number"
                         min={0}
                         value={group.minChoices}
-                        onChange={(e) => updateGroupField(gIdx, "minChoices", Number(e.target.value))}
+                        onChange={(e) => updateChoiceField(gIdx, "minChoices", Number(e.target.value))}
                         required
                       />
                     </div>
                     {/* Max Choices */}
-                    <div className="md:col-span-2 space-y-1">
+                    <div className="md:col-span-3 space-y-1">
                       <Label className="text-[11px] font-semibold text-neutral-400 uppercase">Máximo</Label>
                       <Input
                         type="number"
                         min={1}
                         value={group.maxChoices}
-                        onChange={(e) => updateGroupField(gIdx, "maxChoices", Number(e.target.value))}
+                        onChange={(e) => updateChoiceField(gIdx, "maxChoices", Number(e.target.value))}
                         required
                       />
-                    </div>
-                    {/* Required Checkbox */}
-                    <div className="md:col-span-2 flex items-center h-full pt-6 justify-center">
-                      <label className="flex items-center gap-2 text-xs font-semibold text-neutral-600 dark:text-neutral-300 cursor-pointer">
-                        <Checkbox
-                          checked={group.required}
-                          onCheckedChange={(checked) => updateGroupField(gIdx, "required", !!checked)}
-                        />
-                        Obrigatório
-                      </label>
                     </div>
                   </div>
 
@@ -454,7 +533,7 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
                       <Button
                         type="button"
                         variant="ghost"
-                        onClick={() => addOptionToGroup(gIdx)}
+                        onClick={() => addChoiceItem(gIdx)}
                         className="text-[11px] h-6 text-neutral-500 hover:text-neutral-900"
                       >
                         <Plus className="size-3 mr-1" />
@@ -462,16 +541,16 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
                       </Button>
                     </div>
 
-                    {group.options.length === 0 ? (
+                    {(!group.choiceItems || group.choiceItems.length === 0) ? (
                       <p className="text-[11px] text-neutral-400 italic">Cadastre ao menos uma opção (ex: Coca-Cola, Sem Gelo, etc.)</p>
                     ) : (
                       <div className="space-y-2">
-                        {group.options.map((opt, oIdx) => (
+                        {group.choiceItems.map((ci, oIdx) => (
                           <div key={oIdx} className="flex gap-2 items-center animate-in fade-in-50 duration-75">
                             <Input
                               placeholder="Nome da opção (Ex: Molho de Alho)"
-                              value={opt.name}
-                              onChange={(e) => updateOptionField(gIdx, oIdx, "name", e.target.value)}
+                              value={ci.name}
+                              onChange={(e) => updateChoiceItemName(gIdx, oIdx, e.target.value)}
                               className="h-8 text-xs flex-1"
                               required
                             />
@@ -480,14 +559,14 @@ export function MenuForm({ menuItemId }: MenuFormProps) {
                               <Input
                                 type="text"
                                 placeholder="Valor adicional"
-                                value={formatCurrencyBRL(opt.price)}
-                                onChange={(e) => updateOptionField(gIdx, oIdx, "price", parseCurrencyBRL(e.target.value))}
+                                value={formatCurrencyBRL(ci.variations?.[0]?.additionalPrice || 0)}
+                                onChange={(e) => updateChoiceItemPrice(gIdx, oIdx, parseCurrencyBRL(e.target.value))}
                                 className="h-8 text-xs pl-7"
                               />
                             </div>
                             <button
                               type="button"
-                              onClick={() => removeOptionFromGroup(gIdx, oIdx)}
+                              onClick={() => removeChoiceItem(gIdx, oIdx)}
                               className="text-neutral-400 hover:text-red-500 transition-colors p-1"
                             >
                               <Trash2 className="size-3.5" />

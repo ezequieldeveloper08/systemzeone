@@ -9,6 +9,7 @@ import { ListOrdersUseCase } from './application/use-cases/list-orders.use-case'
 import { GetOrderHistoryUseCase } from './application/use-cases/get-order-history.use-case';
 import { UpdateOrderStatusUseCase } from './application/use-cases/update-order-status.use-case';
 import { OrderController } from './presentation/controllers/order.controller';
+import { OrderPublicController } from './presentation/controllers/order-public.controller';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { OrderController } from './presentation/controllers/order.controller';
     GetOrderHistoryUseCase,
     UpdateOrderStatusUseCase,
   ],
-  controllers: [OrderController],
+  controllers: [OrderController, OrderPublicController],
   exports: [IOrderRepositoryToken],
 })
 export class OrderModule {}

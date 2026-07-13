@@ -42,6 +42,9 @@ export class WhatsappSettingsOrmEntity {
 
   @Column({ type: 'jsonb', name: 'ai_paused_phones', default: '[]' })
   aiPausedPhones: string[];
+  
+  @Column({ type: 'jsonb', name: 'ai_active_tools', default: '[]' })
+  aiActiveTools: string[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

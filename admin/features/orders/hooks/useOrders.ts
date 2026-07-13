@@ -27,6 +27,40 @@ export function useOrders() {
     loadOrders()
   }, [loadOrders])
 
+  // Real-time SSE synchronization
+  useEffect(() => {
+    if (!activeTenant?.id) return
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+    const eventSource = new EventSource(`${API_BASE_URL}/realtime/sse?tenantId=${activeTenant.id}`)
+
+    eventSource.addEventListener("order-created", (event: MessageEvent) => {
+      try {
+        const newOrder = JSON.parse(event.data) as Order
+        setOrders((prev) => {
+          // Avoid duplicate entries
+          if (prev.some((o) => o.id === newOrder.id)) return prev
+          return [newOrder, ...prev]
+        })
+      } catch (e) {
+        console.error("Erro ao ler order-created via SSE:", e)
+      }
+    })
+
+    eventSource.addEventListener("order-updated", (event: MessageEvent) => {
+      try {
+        const updatedOrder = JSON.parse(event.data) as Order
+        setOrders((prev) => prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)))
+      } catch (e) {
+        console.error("Erro ao ler order-updated via SSE:", e)
+      }
+    })
+
+    return () => {
+      eventSource.close()
+    }
+  }, [activeTenant])
+
   const updateOrderStatus = async (id: string, status: Order["status"], paymentMethod?: string | null) => {
     if (!activeTenant) return
     try {

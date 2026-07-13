@@ -6,6 +6,8 @@ import { MetaWhatsappService } from '../../infrastructure/services/meta-whatsapp
 import { WhatsappLog } from '../../domain/entities/whatsapp-log.entity';
 import { ContactService } from '../../../crm/application/services/contact.service';
 
+import { RealTimeService } from '../../../realtime/realtime.service';
+
 @Injectable()
 export class SendFreeTextMessageUseCase {
   constructor(
@@ -13,6 +15,7 @@ export class SendFreeTextMessageUseCase {
     private readonly whatsappRepository: IWhatsappRepository,
     private readonly metaWhatsappService: MetaWhatsappService,
     private readonly contactService: ContactService,
+    private readonly realTimeService: RealTimeService,
   ) {}
 
   async execute(
@@ -133,6 +136,8 @@ export class SendFreeTextMessageUseCase {
       // Don't fail the message if contact status update fails
     }
 
-    return this.whatsappRepository.saveLog(log);
+    const saved = await this.whatsappRepository.saveLog(log);
+    this.realTimeService.emitToTenant(tenantId, 'whatsapp-message', saved);
+    return saved;
   }
 }

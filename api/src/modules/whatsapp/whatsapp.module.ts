@@ -36,11 +36,19 @@ import { ResumeAiUseCase } from './application/use-cases/resume-ai.use-case';
 import { RevokeWhatsappMessageUseCase } from './application/use-cases/revoke-whatsapp-message.use-case';
 
 import { CrmModule } from '../crm/crm.module';
+import { VehicleModule } from '../vehicle/vehicle.module';
+import { RealEstateModule } from '../real-estate/real-estate.module';
+import { MenuModule } from '../menu/menu.module';
+import { OrderModule } from '../order/order.module';
 
 @Module({
   imports: [
     AuthModule,
     CrmModule,
+    VehicleModule,
+    RealEstateModule,
+    MenuModule,
+    OrderModule,
     TypeOrmModule.forFeature([
       WhatsappSettingsOrmEntity,
       WhatsappTemplateOrmEntity,

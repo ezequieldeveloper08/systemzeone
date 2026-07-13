@@ -40,11 +40,14 @@ export class CreateOrderDto {
   paymentMethod?: string;
 }
 
+import { RealTimeService } from '../../../realtime/realtime.service';
+
 @Injectable()
 export class CreateOrderUseCase {
   constructor(
     @Inject(IOrderRepositoryToken)
     private readonly orderRepository: IOrderRepository,
+    private readonly realTimeService: RealTimeService,
   ) {}
 
   async execute(tenantId: string, dto: CreateOrderDto): Promise<Order> {
@@ -63,6 +66,8 @@ export class CreateOrderUseCase {
       new Date(),
       new Date(),
     );
-    return this.orderRepository.save(order);
+    const saved = await this.orderRepository.save(order);
+    this.realTimeService.emitToTenant(tenantId, 'order-created', saved);
+    return saved;
   }
 }

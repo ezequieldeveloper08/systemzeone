@@ -41,4 +41,8 @@ export class SaveSettingsDto {
   @IsString()
   @IsOptional()
   aiModel?: string;
+
+  @ApiProperty({ example: ['buscarVeiculosEstoque'], required: false, type: [String] })
+  @IsOptional()
+  aiActiveTools?: string[];
 }

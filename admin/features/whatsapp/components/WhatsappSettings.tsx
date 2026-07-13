@@ -90,6 +90,44 @@ export function WhatsappSettings() {
     }
   }
 
+  const handleToggleTool = (toolName: string) => {
+    if (!config) return
+    const activeTools = config.aiActiveTools || []
+    let updatedTools: string[]
+    if (activeTools.includes(toolName)) {
+      updatedTools = activeTools.filter(t => t !== toolName)
+    } else {
+      updatedTools = [...activeTools, toolName]
+    }
+    setConfig({ ...config, aiActiveTools: updatedTools })
+  }
+
+  const getAvailableTools = () => {
+    const businessType = activeTenant?.businessType || "veiculos"
+    const list = [
+      { id: "agendarCompromisso", label: "Agendamento de Compromissos", desc: "Permite à IA agendar visitas, test-drives ou reuniões no calendário/CRM." },
+      { id: "atualizarDadosLead", label: "Atualizar Dados do Lead", desc: "Permite à IA coletar e salvar e-mail e notas adicionais no contato do CRM." }
+    ]
+    
+    if (businessType === "veiculos") {
+      list.push(
+        { id: "buscarVeiculosEstoque", label: "Buscar Veículos no Estoque", desc: "Permite à IA pesquisar veículos por marca, modelo, ano ou preço." },
+        { id: "consultarTabelaFipe", label: "Consultar Tabela FIPE", desc: "Permite à IA buscar preços estimados de veículos na Tabela FIPE." }
+      )
+    } else if (businessType === "imoveis") {
+      list.push(
+        { id: "buscarImoveisCatalogo", label: "Buscar Imóveis no Catálogo", desc: "Permite à IA pesquisar casas e apartamentos disponíveis por tipo, preço ou finalidade." }
+      )
+    } else if (businessType === "menu") {
+      list.push(
+        { id: "consultarCardapio", label: "Consultar Cardápio", desc: "Permite à IA pesquisar itens de comida e bebida disponíveis no cardápio." },
+        { id: "criarPedido", label: "Registrar Pré-pedidos", desc: "Permite à IA registrar pré-pedidos direto no painel para delivery, mesa ou retirada." }
+      )
+    }
+    
+    return list
+  }
+
   return (
     <div className="space-y-8">
       {/* HEADER */}
@@ -314,6 +352,49 @@ export function WhatsappSettings() {
                     <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-normal">
                       Defina a personalidade da IA, informações da concessionária e instruções de como ela deve responder.
                     </p>
+                  </div>
+
+                  <div className="space-y-3 pt-3 border-t border-neutral-105 dark:border-neutral-800 animate-in fade-in duration-200">
+                    <div>
+                      <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                        Ferramentas e Ações da IA
+                      </label>
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-normal">
+                        Ative as funções que o assistente virtual poderá executar autonomamente durante as conversas baseando-se no segmento do seu negócio ({(activeTenant?.businessType || 'veiculos') === 'veiculos' ? 'Concessionária' : (activeTenant?.businessType || 'veiculos') === 'imoveis' ? 'Imobiliária' : (activeTenant?.businessType || 'veiculos') === 'menu' ? 'Restaurante' : 'Geral'}).
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 mt-2">
+                      {getAvailableTools().map((tool) => {
+                        const isChecked = config.aiActiveTools?.includes(tool.id) || false
+                        return (
+                          <div
+                            key={tool.id}
+                            onClick={() => handleToggleTool(tool.id)}
+                            className={`flex items-start gap-3 p-3 rounded-lg border transition-all duration-200 cursor-pointer select-none ${
+                              isChecked
+                                ? "bg-emerald-50/50 border-emerald-500/30 dark:bg-emerald-950/10 dark:border-emerald-500/25"
+                                : "bg-neutral-50/50 border-neutral-200 dark:bg-neutral-900/50 dark:border-neutral-800"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              readOnly
+                              className="mt-1 size-3.5 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500 shrink-0 accent-emerald-500 cursor-pointer"
+                            />
+                            <div className="space-y-0.5">
+                              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 leading-none">
+                                {tool.label}
+                              </span>
+                              <p className="text-[10px] text-neutral-550 dark:text-neutral-400 leading-tight">
+                                {tool.desc}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
               )}

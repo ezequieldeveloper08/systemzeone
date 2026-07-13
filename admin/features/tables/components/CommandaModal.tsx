@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react"
 import { Table } from "../types"
 import { Order, OrderItem } from "@/features/orders/types"
 import { useMenu } from "@/features/menu/hooks/useMenu"
-import { MenuItem, ChoiceOption } from "@/features/menu/types"
+import { MenuItem } from "@/features/menu/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -69,7 +69,8 @@ export function CommandaModal({ table, activeOrders, onClose, onAddItems, onClos
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null)
-  const [tempOptions, setTempOptions] = useState<{ [groupName: string]: ChoiceOption[] }>({})
+  const [selectedVariation, setSelectedVariation] = useState<any>(null)
+  const [tempOptions, setTempOptions] = useState<{ [groupName: string]: any[] }>({})
   const [optionErrors, setOptionErrors] = useState<{ [groupName: string]: string }>({})
   const [paymentEntries, setPaymentEntries] = useState<{ method: string; amount: string; received: string }[]>([
     { method: "Dinheiro", amount: "", received: "" },
@@ -98,47 +99,65 @@ export function CommandaModal({ table, activeOrders, onClose, onAddItems, onClos
   )
 
   // Cart management
-  const addToCartDirect = (item: MenuItem, selectedOptions: CartItem["selectedOptions"]) => {
+  const addToCartDirect = (item: MenuItem, selectedOptions: CartItem["selectedOptions"], variation?: any) => {
+    const activeVar = variation || item.variations?.[0]
+    const basePrice = activeVar ? activeVar.price : 0
     const optionsKey = selectedOptions.map((o) => `${o.groupName}:${o.optionName}`).sort().join("|")
-    const uniqueKey = `${item.id}-${optionsKey}`
-    const itemPrice = item.price + selectedOptions.reduce((acc, opt) => acc + opt.price, 0)
+    const uniqueKey = `${item.id}-${activeVar?.name || "Unico"}-${optionsKey}`
+    const itemPrice = basePrice + selectedOptions.reduce((acc, opt) => acc + opt.price, 0)
+    const displayName = `${item.name}${activeVar && activeVar.name !== "Único" ? ` (${activeVar.name})` : ""}`
 
     setCart((prev) => {
       const existing = prev.find((i) => i.uniqueKey === uniqueKey)
       if (existing) {
         return prev.map((i) => (i.uniqueKey === uniqueKey ? { ...i, quantity: i.quantity + 1 } : i))
       }
-      return [...prev, { menuItemId: item.id, name: item.name, price: itemPrice, quantity: 1, selectedOptions, uniqueKey }]
+      return [...prev, { menuItemId: item.id, name: displayName, price: itemPrice, quantity: 1, selectedOptions, uniqueKey }]
     })
   }
 
   const handleAddItemClick = (item: MenuItem) => {
-    if (item.choiceGroups && item.choiceGroups.length > 0) {
+    const hasChoices = item.choices && item.choices.length > 0
+    const hasMultipleVariations = item.variations && item.variations.length > 1
+
+    if (hasChoices || hasMultipleVariations) {
       setCustomizingItem(item)
+      setSelectedVariation(item.variations?.[0] || null)
       const initial: typeof tempOptions = {}
-      item.choiceGroups.forEach((g) => { initial[g.name] = [] })
+      if (item.choices) {
+        item.choices.forEach((g) => { initial[g.name] = [] })
+      }
       setTempOptions(initial)
       setOptionErrors({})
     } else {
-      addToCartDirect(item, [])
+      addToCartDirect(item, [], item.variations?.[0] || null)
     }
   }
 
   const confirmCustomization = () => {
     if (!customizingItem) return
     const errors: typeof optionErrors = {}
-    customizingItem.choiceGroups?.forEach((g) => {
-      if (g.required && (!tempOptions[g.name] || tempOptions[g.name].length === 0)) {
-        errors[g.name] = `Selecione uma opção em "${g.name}"`
+
+    if (!selectedVariation && customizingItem.variations && customizingItem.variations.length > 0) {
+      errors["variation"] = "Selecione uma variação/tamanho"
+    }
+
+    customizingItem.choices?.forEach((g) => {
+      const isRequired = g.minChoices > 0
+      const selectedCount = tempOptions[g.name]?.length || 0
+      if (isRequired && selectedCount < g.minChoices) {
+        errors[g.name] = `Selecione no mínimo ${g.minChoices} opção(ões) em "${g.name}"`
       }
     })
+
     if (Object.keys(errors).length > 0) { setOptionErrors(errors); return }
 
     const selectedOptions = Object.entries(tempOptions).flatMap(([groupName, opts]) =>
-      opts.map((opt) => ({ groupName, optionName: opt.name, price: opt.price }))
+      opts.map((opt) => ({ groupName, optionName: opt.name, price: opt.variations?.[0]?.additionalPrice || 0 }))
     )
-    addToCartDirect(customizingItem, selectedOptions)
+    addToCartDirect(customizingItem, selectedOptions, selectedVariation)
     setCustomizingItem(null)
+    setSelectedVariation(null)
   }
 
   const adjustQty = (uniqueKey: string, delta: number) => {
@@ -408,7 +427,7 @@ export function CommandaModal({ table, activeOrders, onClose, onAddItems, onClos
                   <p className="text-xs text-neutral-400 mt-1 line-clamp-1">{item.description}</p>
                   <div className="flex items-center justify-between w-full mt-2">
                     <span className="text-sm font-extrabold text-neutral-900 dark:text-neutral-100">
-                      R$ {item.price.toFixed(2)}
+                      R$ {(item.variations?.[0]?.price || 0).toFixed(2)}
                     </span>
                     <span className="size-6 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center group-hover:bg-neutral-950 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-neutral-950 transition-colors">
                       <Plus className="size-3.5" />
@@ -694,11 +713,37 @@ export function CommandaModal({ table, activeOrders, onClose, onAddItems, onClos
               </button>
             </div>
             <div className="px-6 py-4 space-y-5 max-h-96 overflow-y-auto">
-              {customizingItem.choiceGroups?.map((group) => (
-                <div key={group.name}>
+              {/* Variations selection */}
+              {customizingItem.variations && customizingItem.variations.length > 1 && (
+                <div className="pb-4 border-b border-neutral-100 dark:border-neutral-800">
+                  <p className="text-xs font-bold uppercase text-neutral-500 mb-2">
+                    Tamanho / Opção <span className="text-red-500">*</span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {customizingItem.variations.map((v) => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setSelectedVariation(v)}
+                        className={`px-3 py-2 rounded-lg border transition-all text-xs text-left ${
+                          selectedVariation?.id === v.id
+                            ? "border-neutral-950 bg-neutral-50 dark:border-white dark:bg-neutral-900 font-semibold"
+                            : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
+                        }`}
+                      >
+                        <div className="font-semibold">{v.name}</div>
+                        <div className="text-[10px] text-neutral-400">R$ {v.price.toFixed(2)}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {customizingItem.choices?.map((group) => (
+                <div key={group.id}>
                   <p className="text-xs font-bold uppercase text-neutral-500 mb-2">
                     {group.name}
-                    {group.required && <span className="ml-1 text-red-500">*</span>}
+                    {group.minChoices > 0 && <span className="ml-1 text-red-500">*</span>}
                     {group.maxChoices > 1 && (
                       <span className="ml-1 text-neutral-400 normal-case font-normal">
                         (máx. {group.maxChoices})
@@ -706,18 +751,20 @@ export function CommandaModal({ table, activeOrders, onClose, onAddItems, onClos
                     )}
                   </p>
                   <div className="space-y-1.5">
-                    {group.options.map((opt) => {
-                      const isSelected = tempOptions[group.name]?.some((o) => o.name === opt.name)
-                        return (
-                          <button
-                            key={opt.name}
+                    {group.choiceItems?.map((ci) => {
+                      const isSelected = tempOptions[group.name]?.some((o) => o.name === ci.name)
+                      const itemPrice = ci.variations?.[0]?.additionalPrice || 0
+                      return (
+                        <button
+                          key={ci.id}
+                          type="button"
                           onClick={() => {
                             setTempOptions((prev) => {
                               const current = prev[group.name] || []
-                              if (isSelected) return { ...prev, [group.name]: current.filter((o) => o.name !== opt.name) }
-                              if (group.maxChoices === 1) return { ...prev, [group.name]: [opt] }
+                              if (isSelected) return { ...prev, [group.name]: current.filter((o) => o.name !== ci.name) }
+                              if (group.maxChoices === 1) return { ...prev, [group.name]: [ci] }
                               if (current.length >= group.maxChoices) return prev
-                              return { ...prev, [group.name]: [...current, opt] }
+                              return { ...prev, [group.name]: [...current, ci] }
                             })
                             setOptionErrors((prev) => ({ ...prev, [group.name]: "" }))
                           }}
@@ -727,9 +774,9 @@ export function CommandaModal({ table, activeOrders, onClose, onAddItems, onClos
                               : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-400"
                           }`}
                         >
-                          <span className={isSelected ? "font-semibold" : ""}>{opt.name}</span>
+                          <span className={isSelected ? "font-semibold" : ""}>{ci.name}</span>
                           <span className="text-xs font-bold text-neutral-500">
-                            {opt.price > 0 ? `+R$ ${opt.price.toFixed(2)}` : "Incluído"}
+                            {itemPrice > 0 ? `+R$ ${itemPrice.toFixed(2)}` : "Incluído"}
                           </span>
                         </button>
                       )

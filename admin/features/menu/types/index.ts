@@ -1,14 +1,39 @@
-export interface ChoiceOption {
+export interface CategoryItem {
+  id: string
   name: string
-  price: number
+  order: number
+  enabled: boolean
 }
 
-export interface ChoiceGroup {
+export interface MenuItemVariation {
+  id: string
+  name: string // Ex: "Único", "Média"
+  price: number
+  enabled: boolean
+  order: number
+}
+
+export interface ChoiceItemVariation {
+  id: string
+  additionalPrice: number
+  variationId?: string | null
+}
+
+export interface ChoiceItem {
+  id: string
   name: string
-  required: boolean
+  enabled: boolean
+  order: number
+  variations: ChoiceItemVariation[]
+}
+
+export interface Choice {
+  id: string
+  name: string
+  choiceType: number // 1 = adicionais/multiple, etc.
   minChoices: number
   maxChoices: number
-  options: ChoiceOption[]
+  choiceItems: ChoiceItem[]
 }
 
 export interface MenuGroup {
@@ -26,11 +51,13 @@ export interface MenuItem {
   tenantId: string
   name: string
   description: string
-  category: string
-  price: number
+  category: string // Fallback simple category string
+  categoryItemId: string | null
+  categoryItem: CategoryItem | null
   status: "published" | "hidden"
   image: string | null
-  choiceGroups: ChoiceGroup[]
+  variations: MenuItemVariation[]
+  choices: Choice[]
   menuId: string | null
   createdAt: string
   updatedAt: string
@@ -39,10 +66,11 @@ export interface MenuItem {
 export interface CreateMenuItemInput {
   name: string
   description: string
-  category: string
-  price: number
+  category?: string
   status?: "published" | "hidden"
   image?: string | null
-  choiceGroups?: ChoiceGroup[]
+  categoryItemId?: string | null
+  variations?: MenuItemVariation[]
+  choices?: Choice[]
   menuId?: string | null
 }

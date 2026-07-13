@@ -15,9 +15,11 @@ import { MenuModule } from './modules/menu/menu.module';
 import { DigitalShowcaseModule } from './modules/digital-showcase/digital-showcase.module';
 import { OrderModule } from './modules/order/order.module';
 import { TableModule } from './modules/table/table.module';
+import { RealTimeModule } from './modules/realtime/realtime.module';
 
 @Module({
   imports: [
+    RealTimeModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',

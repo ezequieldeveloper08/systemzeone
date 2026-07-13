@@ -20,6 +20,17 @@ import {
   FolderOpen
 } from "lucide-react"
 
+const getDisplayPrice = (item: any) => {
+  if (!item.variations || item.variations.length === 0) return "R$ 0,00"
+  const prices = item.variations.map((v: any) => v.price)
+  const minPrice = Math.min(...prices)
+  const formatted = minPrice.toFixed(2).replace(".", ",")
+  if (item.variations.length > 1) {
+    return `A partir de R$ ${formatted}`
+  }
+  return `R$ ${formatted}`
+}
+
 export function MenuList() {
   const {
     menuItems,
@@ -71,7 +82,7 @@ export function MenuList() {
   }
 
   return (
-    <div className="space-y-8 p-6 max-w-7xl mx-auto relative">
+    <div className="space-y-8 mx-auto relative">
       {/* HEADER */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -106,11 +117,10 @@ export function MenuList() {
         <nav className="-mb-px flex gap-6 overflow-x-auto" aria-label="Tabs">
           <button
             onClick={() => setSelectedGroupId(null)}
-            className={`shrink-0 border-b-2 px-1 pb-3 text-sm font-semibold transition-all ${
-              selectedGroupId === null
-                ? "border-neutral-900 text-neutral-900 dark:border-neutral-50 dark:text-neutral-50"
-                : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-            }`}
+            className={`shrink-0 border-b-2 px-1 pb-3 text-sm font-semibold transition-all ${selectedGroupId === null
+              ? "border-neutral-900 text-neutral-900 dark:border-neutral-50 dark:text-neutral-50"
+              : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+              }`}
           >
             Todos os Itens
           </button>
@@ -118,11 +128,10 @@ export function MenuList() {
             <button
               key={group.id}
               onClick={() => setSelectedGroupId(group.id)}
-              className={`shrink-0 border-b-2 px-1 pb-3 text-sm font-semibold transition-all ${
-                selectedGroupId === group.id
-                  ? "border-neutral-900 text-neutral-900 dark:border-neutral-50 dark:text-neutral-50"
-                  : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-              }`}
+              className={`shrink-0 border-b-2 px-1 pb-3 text-sm font-semibold transition-all ${selectedGroupId === group.id
+                ? "border-neutral-900 text-neutral-900 dark:border-neutral-50 dark:text-neutral-50"
+                : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                }`}
             >
               {group.name}
             </button>
@@ -155,7 +164,7 @@ export function MenuList() {
         </div>
       ) : (
         /* ITEMS GRID */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {menuItems.map((item) => (
             <div
               key={item.id}
@@ -197,10 +206,10 @@ export function MenuList() {
                     <h3 className="font-bold text-lg text-neutral-900 dark:text-neutral-50 truncate">
                       {item.name}
                     </h3>
-                    {item.choiceGroups && item.choiceGroups.length > 0 && (
+                    {item.choices && item.choices.length > 0 && (
                       <span className="flex items-center gap-1 text-[10px] font-bold text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950/20 px-1.5 py-0.5 rounded-full shrink-0">
                         <Layers className="size-3" />
-                        {item.choiceGroups.length} adicionais
+                        {item.choices.length} opcionais
                       </span>
                     )}
                   </div>
@@ -213,8 +222,7 @@ export function MenuList() {
                 <div className="flex items-center justify-between pt-4 mt-4 border-t border-neutral-100 dark:border-neutral-800">
                   <span className="text-xs font-semibold text-neutral-400 uppercase">Preço</span>
                   <span className="text-lg font-extrabold text-neutral-950 dark:text-neutral-50 flex items-center">
-                    <span className="text-sm font-semibold mr-0.5">R$</span>
-                    {item.price.toFixed(2)}
+                    {getDisplayPrice(item)}
                   </span>
                 </div>
               </div>

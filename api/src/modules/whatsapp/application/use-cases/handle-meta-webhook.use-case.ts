@@ -14,6 +14,16 @@ import { ContactService } from '../../../crm/application/services/contact.servic
 import { DealService } from '../../../crm/application/services/deal.service';
 import { DealStatus } from '../../../crm/infrastructure/database/deal.orm-entity';
 
+import { IVehicleRepositoryToken } from '../../../vehicle/domain/repositories/vehicle.repository.interface';
+import type { IVehicleRepository } from '../../../vehicle/domain/repositories/vehicle.repository.interface';
+import { IPropertyRepositoryToken } from '../../../real-estate/domain/repositories/property.repository.interface';
+import type { IPropertyRepository } from '../../../real-estate/domain/repositories/property.repository.interface';
+import { IMenuItemRepositoryToken } from '../../../menu/domain/repositories/menu-item.repository.interface';
+import type { IMenuItemRepository } from '../../../menu/domain/repositories/menu-item.repository.interface';
+import { IOrderRepositoryToken } from '../../../order/domain/repositories/order.repository.interface';
+import type { IOrderRepository } from '../../../order/domain/repositories/order.repository.interface';
+import { Order } from '../../../order/domain/entities/order.entity';
+
 // Set path for self-contained ffmpeg
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -46,6 +56,8 @@ async function transcodeOggToOpus(filePath: string): Promise<void> {
   });
 }
 
+import { RealTimeService } from '../../../realtime/realtime.service';
+
 @Injectable()
 export class HandleMetaWebhookUseCase {
   private readonly logger = new Logger(HandleMetaWebhookUseCase.name);
@@ -56,6 +68,15 @@ export class HandleMetaWebhookUseCase {
     private readonly sendFreeTextMessageUseCase: SendFreeTextMessageUseCase,
     private readonly contactService: ContactService,
     private readonly dealService: DealService,
+    private readonly realTimeService: RealTimeService,
+    @Inject(IVehicleRepositoryToken)
+    private readonly vehicleRepository: IVehicleRepository,
+    @Inject(IPropertyRepositoryToken)
+    private readonly propertyRepository: IPropertyRepository,
+    @Inject(IMenuItemRepositoryToken)
+    private readonly menuItemRepository: IMenuItemRepository,
+    @Inject(IOrderRepositoryToken)
+    private readonly orderRepository: IOrderRepository,
   ) {}
 
   async execute(body: any): Promise<void> {
@@ -273,7 +294,8 @@ export class HandleMetaWebhookUseCase {
               new Date(),
             );
 
-            await this.whatsappRepository.saveLog(inboundLog);
+            const savedLog = await this.whatsappRepository.saveLog(inboundLog);
+            this.realTimeService.emitToTenant(tenantId, 'whatsapp-message', savedLog);
             this.logger.log(`Mensagem recebida de ${senderName} (${fromPhone}) salva para o tenant ${tenantId}.`);
 
             const phoneVariants = this.contactService.getPhoneVariants(fromPhone);
@@ -282,7 +304,7 @@ export class HandleMetaWebhookUseCase {
             );
 
             if (settings.aiEnabled && !isPaused && (dbMessageType === 'text' || dbMessageType === 'interactive')) {
-              this.processAiResponse(settings, tenantId, fromPhone, senderName, bodyText)
+              this.processAiResponse(settings, tenantId, fromPhone, senderName, bodyText, contactObj.id)
                 .catch(err => this.logger.error(`Erro assíncrono no agente de IA para ${fromPhone}: ${err.message}`));
             }
           }
@@ -297,6 +319,7 @@ export class HandleMetaWebhookUseCase {
     fromPhone: string,
     senderName: string,
     userMessage: string,
+    contactId: string,
   ): Promise<void> {
     try {
       if (!settings.aiApiKey) {
@@ -334,22 +357,161 @@ ${historyContext}
 
       this.logger.log(`Solicitando resposta da IA (modelo: ${model}) para ${fromPhone}...`);
 
+      const toolsList: any[] = [];
+      const activeTools = settings.aiActiveTools || [];
+      const businessType = (settings as any).businessType || 'crm_only';
+
+      if (activeTools.includes('buscarVeiculosEstoque') && businessType === 'veiculos') {
+        toolsList.push({
+          functionDeclarations: [
+            {
+              name: 'buscarVeiculosEstoque',
+              description: 'Busca veículos no estoque da concessionária por marca, modelo, ano ou preço.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  brand: { type: 'STRING', description: 'Marca do veículo (ex: Toyota, Honda)' },
+                  model: { type: 'STRING', description: 'Modelo ou palavra-chave (ex: Corolla, Civic)' },
+                  priceMax: { type: 'NUMBER', description: 'Preço máximo em reais (ex: 150000)' },
+                },
+              },
+            },
+          ],
+        });
+      }
+
+      if (activeTools.includes('consultarTabelaFipe') && businessType === 'veiculos') {
+        toolsList.push({
+          functionDeclarations: [
+            {
+              name: 'consultarTabelaFipe',
+              description: 'Busca a estimativa de preço de um carro na tabela FIPE de forma fictícia/referencial.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  model: { type: 'STRING', description: 'Modelo do veículo (ex: Corolla 2.0 2022)' },
+                },
+                required: ['model'],
+              },
+            },
+          ],
+        });
+      }
+
+      if (activeTools.includes('buscarImoveisCatalogo') && businessType === 'imoveis') {
+        toolsList.push({
+          functionDeclarations: [
+            {
+              name: 'buscarImoveisCatalogo',
+              description: 'Busca imóveis para alugar ou vender no catálogo da imobiliária.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  type: { type: 'STRING', description: 'Tipo do imóvel: casa, apartamento' },
+                  purpose: { type: 'STRING', description: 'Finalidade: aluguel, venda' },
+                  priceMax: { type: 'NUMBER', description: 'Valor máximo em reais' },
+                },
+              },
+            },
+          ],
+        });
+      }
+
+      if (activeTools.includes('consultarCardapio') && businessType === 'menu') {
+        toolsList.push({
+          functionDeclarations: [
+            {
+              name: 'consultarCardapio',
+              description: 'Busca os pratos e bebidas disponíveis no cardápio do restaurante.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {},
+              },
+            },
+          ],
+        });
+      }
+
+      if (activeTools.includes('criarPedido') && businessType === 'menu') {
+        toolsList.push({
+          functionDeclarations: [
+            {
+              name: 'criarPedido',
+              description: 'Registra um pré-pedido para o cliente no sistema do restaurante.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  deliveryType: { type: 'STRING', description: 'Tipo do pedido: delivery, takeaway, table' },
+                  tableNumber: { type: 'STRING', description: 'Número da mesa (se for do tipo table)' },
+                  itemsDescription: { type: 'STRING', description: 'Descrição dos itens pedidos (ex: 2 pizzas)' },
+                  totalPrice: { type: 'NUMBER', description: 'Valor total aproximado em reais' },
+                },
+                required: ['deliveryType', 'itemsDescription', 'totalPrice'],
+              },
+            },
+          ],
+        });
+      }
+
+      if (activeTools.includes('agendarCompromisso')) {
+        toolsList.push({
+          functionDeclarations: [
+            {
+              name: 'agendarCompromisso',
+              description: 'Agenda um test-drive, visita a imóvel, ou compromisso geral para o cliente.',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  title: { type: 'STRING', description: 'Título do compromisso (ex: Test drive Civic)' },
+                  dateStr: { type: 'STRING', description: 'Data e hora do compromisso (ex: 15/07 às 14:00)' },
+                },
+                required: ['title', 'dateStr'],
+              },
+            },
+          ],
+        });
+      }
+
+      if (activeTools.includes('atualizarDadosLead')) {
+        toolsList.push({
+          functionDeclarations: [
+            {
+              name: 'atualizarDadosLead',
+              description: 'Atualiza informações cadastrais do cliente no banco de dados CRM (ex: e-mail ou observações adicionais).',
+              parameters: {
+                type: 'OBJECT',
+                properties: {
+                  email: { type: 'STRING', description: 'E-mail do cliente' },
+                  notes: { type: 'STRING', description: 'Observações de interesse coletadas' },
+                },
+              },
+            },
+          ],
+        });
+      }
+
+      const requestBody: any = {
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 500,
+          temperature: 0.7,
+        }
+      };
+
+      if (toolsList.length > 0) {
+        requestBody.tools = toolsList;
+      }
+
       const res = await fetch(geminiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }]
-            }
-          ],
-          generationConfig: {
-            maxOutputTokens: 500,
-            temperature: 0.7,
-          }
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!res.ok) {
@@ -358,7 +520,130 @@ ${historyContext}
       }
 
       const resJson = await res.json();
-      const aiReply = resJson.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      let aiReply = resJson.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      const functionCall = resJson.candidates?.[0]?.content?.parts?.[0]?.functionCall;
+
+      if (functionCall) {
+        this.logger.log(`Gemini solicitou chamada de ferramenta: ${functionCall.name} com args: ${JSON.stringify(functionCall.args)}`);
+        let functionResult = {};
+        
+        try {
+          if (functionCall.name === 'buscarVeiculosEstoque') {
+            const args = functionCall.args || {};
+            const list = await this.vehicleRepository.findAll(tenantId);
+            const filtered = list.filter(v => {
+              if (args.brand && !v.brand.toLowerCase().includes(args.brand.toLowerCase())) return false;
+              if (args.model && !v.model.toLowerCase().includes(args.model.toLowerCase())) return false;
+              if (args.priceMax && v.price > args.priceMax) return false;
+              return true;
+            });
+            functionResult = { vehicles: filtered.map(v => ({ brand: v.brand, model: v.model, year: v.year, price: v.price, color: v.color })) };
+          } else if (functionCall.name === 'consultarTabelaFipe') {
+            const args = functionCall.args || {};
+            functionResult = { model: args.model, fipePrice: 'R$ 115.000,00' };
+          } else if (functionCall.name === 'buscarImoveisCatalogo') {
+            const args = functionCall.args || {};
+            const list = await this.propertyRepository.findAll(tenantId);
+            const filtered = list.filter(p => {
+              if (args.type && !p.type.toLowerCase().includes(args.type.toLowerCase())) return false;
+              if (args.purpose && !p.status.toLowerCase().includes(args.purpose.toLowerCase())) return false;
+              if (args.priceMax && p.price > args.priceMax) return false;
+              return true;
+            });
+            functionResult = { properties: filtered.map(p => ({ title: p.title, type: p.type, price: p.price, status: p.status })) };
+          } else if (functionCall.name === 'consultarCardapio') {
+            const list = await this.menuItemRepository.findAll(tenantId);
+            functionResult = { menu: list.map(item => ({ name: item.name, price: (item.variations?.[0]?.price) || 0, description: item.description })) };
+          } else if (functionCall.name === 'criarPedido') {
+            const args = functionCall.args || {};
+            const order = new Order(
+              crypto.randomUUID ? crypto.randomUUID() : `order_${Date.now()}`,
+              tenantId,
+              senderName,
+              fromPhone,
+              args.deliveryType,
+              args.deliveryType === 'delivery' ? 'Endereço fornecido pelo cliente' : null,
+              args.deliveryType === 'table' ? (args.tableNumber || '1') : null,
+              args.totalPrice,
+              'pending',
+              [{ name: args.itemsDescription, quantity: 1, price: args.totalPrice }],
+              'WhatsApp Pay / Cartão na entrega',
+              new Date(),
+              new Date(),
+            );
+            const savedOrder = await this.orderRepository.save(order);
+            this.realTimeService.emitToTenant(tenantId, 'order-created', savedOrder);
+            functionResult = { status: 'success', message: 'Pedido pré-registrado no painel do restaurante.', orderId: savedOrder.id };
+          } else if (functionCall.name === 'agendarCompromisso') {
+            const args = functionCall.args || {};
+            const contactDeals = await this.dealService.findAll(tenantId);
+            const openDeal = contactDeals.find(
+              (d) => d.contactId === contactId && d.status === DealStatus.OPEN,
+            );
+            if (openDeal) {
+              await this.dealService.update(tenantId, openDeal.id, {
+                description: `${openDeal.description || ''}\n[Compromisso Agendado]: ${args.title} em ${args.dateStr}`,
+              });
+            } else {
+              await this.dealService.create(tenantId, {
+                contactId,
+                title: args.title,
+                description: `Compromisso Agendado: ${args.title} em ${args.dateStr}`,
+              });
+            }
+            functionResult = { status: 'success', message: `Compromisso "${args.title}" agendado com sucesso para ${args.dateStr}.` };
+          } else if (functionCall.name === 'atualizarDadosLead') {
+            const args = functionCall.args || {};
+            await this.contactService.update(tenantId, contactId, {
+              email: args.email,
+              notes: args.notes,
+            });
+            functionResult = { status: 'success', message: 'Dados cadastrais do lead atualizados com sucesso.' };
+          }
+        } catch (fErr) {
+          this.logger.error(`Erro ao rodar ferramenta local ${functionCall.name}: ${fErr.message}`);
+          functionResult = { error: fErr.message };
+        }
+
+        this.logger.log(`Retornando resposta da ferramenta para o Gemini...`);
+        const secondRes = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: prompt }]
+              },
+              {
+                role: 'model',
+                parts: [{ functionCall }]
+              },
+              {
+                role: 'user',
+                parts: [
+                  {
+                    functionResponse: {
+                      name: functionCall.name,
+                      response: functionResult
+                    }
+                  }
+                ]
+              }
+            ]
+          })
+        });
+
+        if (!secondRes.ok) {
+          const errorText = await secondRes.text();
+          throw new Error(`Erro na API do Gemini após chamada de ferramenta: ${secondRes.status} - ${errorText}`);
+        }
+
+        const secondResJson = await secondRes.json();
+        aiReply = secondResJson.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      }
 
       if (!aiReply) {
         this.logger.warn(`API do Gemini retornou resposta vazia para ${fromPhone}.`);
@@ -377,6 +662,29 @@ ${historyContext}
 
     } catch (err) {
       this.logger.error(`Erro ao processar resposta da IA para ${fromPhone}: ${err.message}`);
+      
+      try {
+        const errorLog = new WhatsappLog(
+          crypto.randomUUID ? crypto.randomUUID() : `wamid.err_${Date.now()}`,
+          tenantId,
+          contactId,
+          senderName,
+          fromPhone,
+          'outbound',
+          'text',
+          null,
+          { sentBy: 'ai', error: 'true' },
+          'Erro ao processar resposta da IA: ' + err.message,
+          'failed',
+          err.message,
+          new Date(),
+          new Date(),
+        );
+        const savedErrorLog = await this.whatsappRepository.saveLog(errorLog);
+        this.realTimeService.emitToTenant(tenantId, 'whatsapp-message', savedErrorLog);
+      } catch (saveErr) {
+        this.logger.error(`Erro ao salvar log de erro da IA no banco: ${saveErr.message}`);
+      }
     }
   }
 
