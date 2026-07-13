@@ -11,6 +11,7 @@ const getSessionHeaders = (): Record<string, string> => {
       "Authorization": `Bearer ${session.token}`,
       "x-tenant-id": String(session.activeTenant?.id || ""),
       "ngrok-skip-browser-warning": "true",
+      "Bypass-Tunnel-Reminder": "true",
     }
   } catch {
     return {}
