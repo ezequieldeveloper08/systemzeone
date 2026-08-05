@@ -43,6 +43,9 @@ export class WhatsappLogOrmEntity {
   @Column({ name: 'error_message', nullable: true, type: 'text' })
   errorMessage: string | null;
 
+  @Column({ type: 'varchar', length: 50, default: 'whatsapp' })
+  channel: 'whatsapp' | 'instagram' | 'facebook';
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

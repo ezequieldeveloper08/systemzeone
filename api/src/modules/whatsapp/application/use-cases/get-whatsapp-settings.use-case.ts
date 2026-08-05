@@ -32,6 +32,10 @@ export class GetWhatsappSettingsUseCase {
         'Você é um assistente virtual atencioso para nossa concessionária de veículos. Responda de forma profissional, simpática e prestativa.',
         'gemini-2.0-flash',
         [],
+        [],
+        null,
+        null,
+        null,
       );
       await this.whatsappRepository.saveSettings(settings);
     }

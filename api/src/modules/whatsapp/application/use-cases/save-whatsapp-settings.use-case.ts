@@ -23,6 +23,9 @@ export class SaveWhatsappSettingsUseCase {
       aiAgentInstructions?: string;
       aiModel?: string;
       aiActiveTools?: string[];
+      facebookPageId?: string;
+      facebookPageAccessToken?: string;
+      instagramBusinessAccountId?: string;
     },
   ): Promise<WhatsappSettings> {
     let settings = await this.whatsappRepository.findSettingsByTenantId(tenantId);
@@ -40,6 +43,9 @@ export class SaveWhatsappSettingsUseCase {
       if (data.aiAgentInstructions !== undefined) settings.aiAgentInstructions = data.aiAgentInstructions;
       if (data.aiModel !== undefined) settings.aiModel = data.aiModel;
       if (data.aiActiveTools !== undefined) settings.aiActiveTools = data.aiActiveTools;
+      if (data.facebookPageId !== undefined) settings.facebookPageId = data.facebookPageId;
+      if (data.facebookPageAccessToken !== undefined) settings.facebookPageAccessToken = data.facebookPageAccessToken;
+      if (data.instagramBusinessAccountId !== undefined) settings.instagramBusinessAccountId = data.instagramBusinessAccountId;
     } else {
       settings = new WhatsappSettings(
         crypto.randomUUID(),
@@ -57,6 +63,9 @@ export class SaveWhatsappSettingsUseCase {
         data.aiModel || 'gemini-2.0-flash',
         [],
         data.aiActiveTools || [],
+        data.facebookPageId || null,
+        data.facebookPageAccessToken || null,
+        data.instagramBusinessAccountId || null,
       );
     }
 

@@ -37,6 +37,42 @@ import {
   Brain
 } from "lucide-react"
 
+const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+)
+
+const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+)
+
 interface ChatMessage {
   id: string
   sender: "lead" | "agent"
@@ -62,6 +98,7 @@ interface ChatContact {
   lastInboundMessageTime: string | null
   tags: string[]
   notes: string
+  channel?: "whatsapp" | "instagram" | "facebook"
   messages: ChatMessage[]
 }
 
@@ -552,7 +589,7 @@ export function WhatsappChat() {
           id: c.recipientPhone,
           name: c.recipientName,
           phone: c.recipientPhone,
-          company: "Cliente WhatsApp",
+          company: c.channel === 'instagram' ? 'Instagram Direct' : c.channel === 'facebook' ? 'Facebook Messenger' : 'Cliente WhatsApp',
           queue: "Comercial",
           responsible: "Você",
           avatarInitials: getAvatarInitials(c.recipientName),
@@ -562,6 +599,7 @@ export function WhatsappChat() {
           lastInboundMessageTime: c.lastInboundMessageTime || null,
           tags: savedTags,
           notes: savedNotes,
+          channel: c.channel || 'whatsapp',
           messages: []
         }
       })
@@ -576,20 +614,23 @@ export function WhatsappChat() {
           setSelectedChatPhone(found.phone)
         } else {
           // If not in the list, create a placeholder contact
+          const isFb = phoneParam.startsWith('fb_');
+          const isIg = phoneParam.startsWith('ig_');
           const placeholderContact: ChatContact = {
             id: phoneParam,
-            name: nameParam || phoneParam,
+            name: nameParam || (isFb ? 'Cliente Messenger' : isIg ? 'Cliente Instagram' : phoneParam),
             phone: phoneParam,
-            company: "Cliente WhatsApp",
+            company: isFb ? "Facebook Messenger" : isIg ? "Instagram Direct" : "Cliente WhatsApp",
             queue: "Comercial",
             responsible: "Você",
-            avatarInitials: getAvatarInitials(nameParam || phoneParam),
+            avatarInitials: getAvatarInitials(nameParam || (isFb ? 'Cliente Messenger' : isIg ? 'Cliente Instagram' : phoneParam)),
             unreadCount: 0,
             lastMsgTime: "Agora",
             lastMsgText: "Nova conversa iniciada...",
             lastInboundMessageTime: null,
             tags: [],
             notes: "",
+            channel: isFb ? 'facebook' : isIg ? 'instagram' : 'whatsapp',
             messages: []
           }
           mappedContacts.unshift(placeholderContact)
@@ -1037,7 +1078,13 @@ export function WhatsappChat() {
       await whatsappService.sendFreeTextMessage(
         activeChat.phone,
         activeChat.name,
-        messageText
+        messageText,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        activeChat.channel
       )
 
       if (aiEnabled && !aiPausedPhones.includes(activeChat.phone)) {
@@ -1131,7 +1178,8 @@ export function WhatsappChat() {
         type,
         imageUrl,
         interactiveType,
-        interactiveData
+        interactiveData,
+        activeChat.channel
       )
 
       if (aiEnabled && !aiPausedPhones.includes(activeChat.phone)) {
@@ -1323,8 +1371,15 @@ export function WhatsappChat() {
                   {/* Text details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 truncate">
+                      <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 truncate flex items-center gap-1.5">
                         {c.name}
+                        {c.channel === 'instagram' ? (
+                          <InstagramIcon className="size-3.5 text-pink-500 shrink-0" />
+                        ) : c.channel === 'facebook' ? (
+                          <FacebookIcon className="size-3.5 text-blue-600 shrink-0" />
+                        ) : (
+                          <MessageSquare className="size-3 text-emerald-500 shrink-0" />
+                        )}
                       </span>
                       <span className="text-[10px] text-neutral-400 shrink-0">
                         {c.lastMsgTime}
@@ -1371,6 +1426,11 @@ export function WhatsappChat() {
               <div className="leading-tight">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{activeChat.name}</h3>
+                  {activeChat.channel === 'instagram' ? (
+                    <InstagramIcon className="size-4 text-pink-500 shrink-0" />
+                  ) : activeChat.channel === 'facebook' ? (
+                    <FacebookIcon className="size-4 text-blue-600 shrink-0" />
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-neutral-500 dark:text-neutral-400">
                   <span className="text-emerald-500 font-semibold flex items-center gap-1">

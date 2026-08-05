@@ -46,6 +46,15 @@ export class WhatsappSettingsOrmEntity {
   @Column({ type: 'jsonb', name: 'ai_active_tools', default: '[]' })
   aiActiveTools: string[];
 
+  @Column({ type: 'varchar', name: 'facebook_page_id', nullable: true })
+  facebookPageId: string | null;
+
+  @Column({ type: 'varchar', name: 'facebook_page_access_token', nullable: true })
+  facebookPageAccessToken: string | null;
+
+  @Column({ type: 'varchar', name: 'instagram_business_account_id', nullable: true })
+  instagramBusinessAccountId: string | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

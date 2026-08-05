@@ -14,6 +14,9 @@ import { WhatsappFlowOrmEntity } from '../database/whatsapp-flow.orm-entity';
 import { WhatsappFlowResponseOrmEntity } from '../database/whatsapp-flow-response.orm-entity';
 
 function normalizeRecipientPhone(phone: string): string {
+  if (phone.startsWith('fb_') || phone.startsWith('ig_')) {
+    return phone;
+  }
   let clean = phone.replace(/\D/g, '');
   if (clean.length === 10 || clean.length === 11) {
     clean = '55' + clean;
@@ -138,9 +141,22 @@ export class WhatsappRepository implements IWhatsappRepository {
       orm.aiModel,
       orm.aiPausedPhones || [],
       orm.aiActiveTools || [],
+      orm.facebookPageId,
+      orm.facebookPageAccessToken,
+      orm.instagramBusinessAccountId,
     );
     if (orm.tenant) {
       (domain as any).businessType = orm.tenant.businessType;
+      (domain as any).tenantInfo = {
+        name: orm.tenant.name,
+        businessType: orm.tenant.businessType,
+        bio: orm.tenant.bio,
+        phone: orm.tenant.phone,
+        address: orm.tenant.address,
+        openingHours: orm.tenant.openingHours,
+        instagram: orm.tenant.instagram,
+        facebook: orm.tenant.facebook,
+      };
     }
     return domain;
   }
@@ -162,6 +178,9 @@ export class WhatsappRepository implements IWhatsappRepository {
     orm.aiModel = domain.aiModel;
     orm.aiPausedPhones = domain.aiPausedPhones || [];
     orm.aiActiveTools = domain.aiActiveTools || [];
+    orm.facebookPageId = domain.facebookPageId;
+    orm.facebookPageAccessToken = domain.facebookPageAccessToken;
+    orm.instagramBusinessAccountId = domain.instagramBusinessAccountId;
     return orm;
   }
 
@@ -219,6 +238,7 @@ export class WhatsappRepository implements IWhatsappRepository {
       orm.errorMessage,
       orm.createdAt,
       orm.updatedAt,
+      orm.channel || 'whatsapp',
     );
   }
 
@@ -238,6 +258,7 @@ export class WhatsappRepository implements IWhatsappRepository {
     orm.errorMessage = domain.errorMessage;
     orm.createdAt = domain.createdAt;
     orm.updatedAt = domain.updatedAt;
+    orm.channel = domain.channel || 'whatsapp';
     return orm;
   }
 
@@ -253,6 +274,22 @@ export class WhatsappRepository implements IWhatsappRepository {
   async findSettingsByPhoneNumberId(phoneNumberId: string): Promise<WhatsappSettings | null> {
     const orm = await this.settingsRepository.findOne({
       where: { phoneNumberId },
+      relations: { tenant: true },
+    });
+    return orm ? this.toSettingsDomain(orm) : null;
+  }
+
+  async findSettingsByFacebookPageId(facebookPageId: string): Promise<WhatsappSettings | null> {
+    const orm = await this.settingsRepository.findOne({
+      where: { facebookPageId },
+      relations: { tenant: true },
+    });
+    return orm ? this.toSettingsDomain(orm) : null;
+  }
+
+  async findSettingsByInstagramBusinessAccountId(instagramBusinessAccountId: string): Promise<WhatsappSettings | null> {
+    const orm = await this.settingsRepository.findOne({
+      where: { instagramBusinessAccountId },
       relations: { tenant: true },
     });
     return orm ? this.toSettingsDomain(orm) : null;
@@ -351,6 +388,7 @@ export class WhatsappRepository implements IWhatsappRepository {
     lastMessageTime: Date;
     lastInboundMessageTime: Date | null;
     unreadCount: number;
+    channel: 'whatsapp' | 'instagram' | 'facebook';
   }[]> {
     const logs = await this.logRepository.find({
       where: { tenantId },
@@ -385,6 +423,7 @@ export class WhatsappRepository implements IWhatsappRepository {
       lastMessageTime: log.createdAt,
       lastInboundMessageTime: lastInboundMap.get(log.recipientPhone) || null,
       unreadCount: unreadMap.get(log.recipientPhone) || 0,
+      channel: log.channel || 'whatsapp',
     }));
   }
 

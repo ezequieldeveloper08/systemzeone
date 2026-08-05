@@ -211,7 +211,7 @@ export function Sidebar() {
     <>
       <aside className="fixed inset-y-0 left-0 z-20 flex w-72 flex-col border-r border-neutral-200 bg-neutral-50 px-4 py-4 dark:border-neutral-800 dark:bg-neutral-950">
         {/* LOGO & TENANT SELECTOR */}
-        <Image src={theme === "dark" ? "/logo-dark-mode.svg" : "/logo-ligth-mode.svg"} alt="Logo" width={120} height={120} />
+        <Image src={theme === "dark" ? "/logo-dark-mode.svg" : "/logo-ligth-mode.svg"} alt="Logo" width={100} height={48} />
         <div className="relative my-5" ref={tenantMenuRef}>
           <button
             onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}
@@ -221,10 +221,10 @@ export function Sidebar() {
               <div className="flex flex-col min-w-0 leading-tight">
                 <span className="font-semibold text-xs text-neutral-400 uppercase tracking-wider">
                   {activeTenant.businessType === "veiculos" ? "Veículos Multitenant" :
-                   activeTenant.businessType === "imoveis" ? "Imóveis Multitenant" :
-                   activeTenant.businessType === "menu" ? "Cardápio Multitenant" :
-                   activeTenant.businessType === "vitrine" ? "Vitrine Multitenant" :
-                   "SaaS Multitenant"}
+                    activeTenant.businessType === "imoveis" ? "Imóveis Multitenant" :
+                      activeTenant.businessType === "menu" ? "Cardápio Multitenant" :
+                        activeTenant.businessType === "vitrine" ? "Vitrine Multitenant" :
+                          "SaaS Multitenant"}
                 </span>
                 <span className="font-medium text-sm text-neutral-800 dark:text-neutral-200 truncate">
                   {activeTenant.name}
@@ -239,10 +239,10 @@ export function Sidebar() {
             <div className="absolute top-full left-0 z-30 mt-1.5 w-full rounded-lg border border-neutral-200 bg-white p-1.5 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
               <p className="px-2.5 py-1 text-xs font-semibold text-neutral-400 uppercase">
                 {activeTenant.businessType === "veiculos" ? "Concessionárias" :
-                 activeTenant.businessType === "imoveis" ? "Imobiliárias" :
-                 activeTenant.businessType === "menu" ? "Restaurantes" :
-                 activeTenant.businessType === "vitrine" ? "Lojas" :
-                 "Empresas"}
+                  activeTenant.businessType === "imoveis" ? "Imobiliárias" :
+                    activeTenant.businessType === "menu" ? "Restaurantes" :
+                      activeTenant.businessType === "vitrine" ? "Lojas" :
+                        "Empresas"}
               </p>
               <div className="max-h-40 overflow-y-auto space-y-0.5 mt-1">
                 {tenants.map((t) => (
@@ -273,10 +273,10 @@ export function Sidebar() {
               >
                 <Plus className="size-4" />
                 Criar {activeTenant.businessType === "veiculos" ? "Concessionária" :
-                       activeTenant.businessType === "imoveis" ? "Imobiliária" :
-                       activeTenant.businessType === "menu" ? "Restaurante" :
-                       activeTenant.businessType === "vitrine" ? "Loja" :
-                       "Empresa"}
+                  activeTenant.businessType === "imoveis" ? "Imobiliária" :
+                    activeTenant.businessType === "menu" ? "Restaurante" :
+                      activeTenant.businessType === "vitrine" ? "Loja" :
+                        "Empresa"}
               </button>
             </div>
           )}

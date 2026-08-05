@@ -15,5 +15,8 @@ export class WhatsappSettings {
     public aiModel: string = 'gemini-2.0-flash',
     public aiPausedPhones: string[] = [],
     public aiActiveTools: string[] = [],
+    public facebookPageId: string | null = null,
+    public facebookPageAccessToken: string | null = null,
+    public instagramBusinessAccountId: string | null = null,
   ) {}
 }

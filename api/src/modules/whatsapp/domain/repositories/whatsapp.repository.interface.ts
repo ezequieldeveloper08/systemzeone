@@ -7,6 +7,8 @@ import { WhatsappFlowResponse } from '../entities/whatsapp-flow-response.entity'
 export interface IWhatsappRepository {
   findSettingsByTenantId(tenantId: string): Promise<WhatsappSettings | null>;
   findSettingsByPhoneNumberId(phoneNumberId: string): Promise<WhatsappSettings | null>;
+  findSettingsByFacebookPageId(facebookPageId: string): Promise<WhatsappSettings | null>;
+  findSettingsByInstagramBusinessAccountId(instagramBusinessAccountId: string): Promise<WhatsappSettings | null>;
   saveSettings(settings: WhatsappSettings): Promise<WhatsappSettings>;
 
   findTemplatesByTenantId(tenantId: string): Promise<WhatsappTemplate[]>;

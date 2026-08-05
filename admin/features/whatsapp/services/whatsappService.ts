@@ -51,6 +51,9 @@ export const whatsappService = {
       aiModel: data.aiModel || "gemini-2.0-flash",
       aiPausedPhones: data.aiPausedPhones || [],
       aiActiveTools: data.aiActiveTools || [],
+      facebookPageId: data.facebookPageId || "",
+      facebookPageAccessToken: data.facebookPageAccessToken || "",
+      instagramBusinessAccountId: data.instagramBusinessAccountId || "",
     }
   },
 
@@ -68,6 +71,9 @@ export const whatsappService = {
         aiAgentInstructions: config.aiAgentInstructions,
         aiModel: config.aiModel,
         aiActiveTools: config.aiActiveTools,
+        facebookPageId: config.facebookPageId,
+        facebookPageAccessToken: config.facebookPageAccessToken,
+        instagramBusinessAccountId: config.instagramBusinessAccountId,
       }),
     })
 
@@ -162,17 +168,6 @@ export const whatsappService = {
   },
 
   async getHistory(tenantId: string): Promise<WhatsappMessageLog[]> {
-    // History page wants a list of messages. We can query getChats or get log details.
-    // In our backend, we have GET /whatsapp/chats. But we can also get messages by fetching chats, then fetching messages of those chats, 
-    // or just loading the chats list which already contains the lastMessageText.
-    // Let's implement an endpoint to get all logs on backend?
-    // Wait, on the backend we can load messages for all chats or we can map this by listing chats.
-    // To make it very simple: we can load all messages for the current tenant by fetching the logs endpoint!
-    // Oh, wait! Did we implement GET /whatsapp/logs on the backend? No, but wait: we can implement it in the controller, or we can just fetch logs inside a custom endpoint!
-    // Wait, let's look at `WhatsappController`. We did not define a logs endpoint, but we can query logs from the chat list, or add GET /whatsapp/logs to WhatsappController.
-    // Let's check: yes, we can add GET /whatsapp/logs! That will make getHistory(tenantId) fetch all messages perfectly!
-    // Let's implement `GET /whatsapp/logs` in the backend WhatsappController.
-    // Let's write the frontend method first to expect it:
     const response = await fetch(`${API_BASE_URL}/whatsapp/chats`, {
       method: "GET",
       headers: getSessionHeaders(),
@@ -182,10 +177,7 @@ export const whatsappService = {
       throw new Error("Erro ao carregar histórico do WhatsApp.")
     }
 
-    const chats = await response.json() // returns unique chats list
-    // To populate the history table, we can fetch messages for each chat, or we can list logs.
-    // Listing logs directly is cleaner. Let's write a backend endpoint for logs!
-    // Let's call GET `${API_BASE_URL}/whatsapp/logs` which we will add.
+    const chats = await response.json()
     const logsResponse = await fetch(`${API_BASE_URL}/whatsapp/logs`, {
       method: "GET",
       headers: getSessionHeaders(),
@@ -283,6 +275,7 @@ export const whatsappService = {
     imageUrl?: string,
     interactiveType?: "cta_url" | "list" | "button",
     interactiveData?: any,
+    channel?: "whatsapp" | "instagram" | "facebook",
   ): Promise<any> {
     const response = await fetch(`${API_BASE_URL}/whatsapp/send-message`, {
       method: "POST",
@@ -296,6 +289,7 @@ export const whatsappService = {
         imageUrl,
         interactiveType,
         interactiveData,
+        channel: channel || "whatsapp",
       }),
     })
 
@@ -480,6 +474,9 @@ export const whatsappService = {
       aiModel: data.aiModel || "gemini-2.0-flash",
       aiPausedPhones: data.aiPausedPhones || [],
       aiActiveTools: data.aiActiveTools || [],
+      facebookPageId: data.facebookPageId || "",
+      facebookPageAccessToken: data.facebookPageAccessToken || "",
+      instagramBusinessAccountId: data.instagramBusinessAccountId || "",
     }
   },
 }

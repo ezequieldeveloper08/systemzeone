@@ -80,7 +80,21 @@ export class HandleMetaWebhookUseCase {
   ) {}
 
   async execute(body: any): Promise<void> {
-    if (!body || body.object !== 'whatsapp_business_account') {
+    if (!body) {
+      return;
+    }
+
+    if (body.object === 'page') {
+      await this.handleFacebookWebhook(body);
+      return;
+    }
+
+    if (body.object === 'instagram') {
+      await this.handleInstagramWebhook(body);
+      return;
+    }
+
+    if (body.object !== 'whatsapp_business_account') {
       return;
     }
 
@@ -332,8 +346,17 @@ export class HandleMetaWebhookUseCase {
       const recentLogs = logs.slice(-15);
 
       // 2. Build system instructions and history
+      const tenantInfo = settings.tenantInfo || {};
+      const tenantName = tenantInfo.name || 'nossa empresa';
+      const tenantBio = tenantInfo.bio || '';
+      const tenantAddress = tenantInfo.address || '';
+      const tenantPhone = tenantInfo.phone || '';
+      const tenantHours = tenantInfo.openingHours ? JSON.stringify(tenantInfo.openingHours) : 'Não especificado';
+      const tenantInstagram = tenantInfo.instagram || 'Não especificado';
+
+      const businessType = (settings as any).businessType || 'crm_only';
       const systemInstruction = settings.aiAgentInstructions || 
-        'Você é um assistente virtual atencioso para nossa concessionária de veículos. Responda de forma profissional e prestativa.';
+        `Você é um assistente virtual atencioso para a empresa ${tenantName}. Responda de forma profissional, simpática e prestativa.`;
       
       const historyContext = recentLogs
         .map(log => {
@@ -344,6 +367,21 @@ export class HandleMetaWebhookUseCase {
 
       const prompt = `Instruções do Sistema:
 ${systemInstruction}
+
+Informações Oficiais da Empresa (Tenant):
+- Nome da Empresa: ${tenantName}
+- Ramo de Atuação: ${businessType}
+- Sobre a Empresa (Bio): ${tenantBio}
+- Endereço Físico: ${tenantAddress}
+- Telefone de Contato: ${tenantPhone}
+- Horário de Funcionamento: ${tenantHours}
+- Redes Sociais: ${tenantInstagram}
+
+REGRAS OBRIGATÓRIAS PARA A IA:
+1. Responda APENAS com base nos dados e informações oficiais fornecidos acima ou retornados pelas ferramentas ativas.
+2. NUNCA invente informações, preços, endereços, horários ou características de produtos (como carros, pratos, imóveis) que não estejam explícitas. Responder com achismos ou inventar dados é estritamente proibido.
+3. Se o cliente perguntar sobre algo (como um produto específico) e a busca das ferramentas não retornar resultados, diga honestamente que não encontrou a informação e ofereça-se para anotar as observações do cliente e cadastrá-lo como lead para que um humano entre em contato para ajudar.
+4. Responda de forma prestativa, com mensagens curtas e objetivas adequadas para leitura rápida no WhatsApp.
 
 Histórico da Conversa:
 ${historyContext}
@@ -359,7 +397,6 @@ ${historyContext}
 
       const toolsList: any[] = [];
       const activeTools = settings.aiActiveTools || [];
-      const businessType = (settings as any).businessType || 'crm_only';
 
       if (activeTools.includes('buscarVeiculosEstoque') && businessType === 'veiculos') {
         toolsList.push({
@@ -785,6 +822,154 @@ ${historyContext}
     } catch (error) {
       this.logger.error(`Falha ao baixar mídia ${mediaId} da Meta: ${error.message}`);
       return null;
+    }
+  }
+
+  private async ensureActiveDeal(tenantId: string, contactObj: any, channelName: string): Promise<void> {
+    try {
+      const contactDeals = await this.dealService.findAll(tenantId);
+      const hasActiveDeal = contactDeals.some(
+        (d) => d.contactId === contactObj.id && d.status === DealStatus.OPEN,
+      );
+      if (!hasActiveDeal) {
+        await this.dealService.create(tenantId, {
+          contactId: contactObj.id,
+          title: `Oportunidade ${channelName} - ${contactObj.name}`,
+          description: `Criado automaticamente pelo atendimento ${channelName}`,
+          value: 0,
+        });
+        this.logger.log(`Nova oportunidade criada no pipeline para o contato ${contactObj.name}`);
+      }
+    } catch (err) {
+      this.logger.error(`Erro ao verificar/criar oportunidade para contato ${contactObj.id}: ${err.message}`);
+    }
+  }
+
+  private async handleFacebookWebhook(body: any): Promise<void> {
+    const entries = body.entry || [];
+    for (const entry of entries) {
+      const pageId = entry.id;
+      const settings = await this.whatsappRepository.findSettingsByFacebookPageId(pageId);
+      if (!settings) {
+        this.logger.warn(`Mensagem do Messenger recebida na página ${pageId} não pôde ser roteada: tenant não encontrado.`);
+        continue;
+      }
+
+      const tenantId = settings.tenantId;
+
+      const messaging = entry.messaging || [];
+      for (const item of messaging) {
+        if (item.message && item.sender && item.sender.id !== pageId) {
+          const senderPsid = item.sender.id;
+          const messageId = item.message.mid;
+          const bodyText = item.message.text || '';
+          
+          if (!bodyText) continue;
+
+          const fromPhone = `fb_${senderPsid}`;
+          const senderName = 'Cliente Messenger';
+
+          const contactObj = await this.contactService.findOrCreateFromWhatsapp({
+            tenantId,
+            name: senderName,
+            phone: fromPhone,
+          });
+
+          await this.ensureActiveDeal(tenantId, contactObj, 'Messenger');
+
+          const inboundLog = new WhatsappLog(
+            messageId,
+            tenantId,
+            contactObj.id,
+            senderName,
+            fromPhone,
+            'inbound',
+            'text',
+            null,
+            {},
+            bodyText,
+            'delivered',
+            null,
+            new Date(),
+            new Date(),
+            'facebook',
+          );
+
+          const savedLog = await this.whatsappRepository.saveLog(inboundLog);
+          this.realTimeService.emitToTenant(tenantId, 'whatsapp-message', savedLog);
+          this.logger.log(`Mensagem do Messenger recebida de ${senderPsid} salva para o tenant ${tenantId}.`);
+
+          const isPaused = settings.aiPausedPhones && settings.aiPausedPhones.includes(fromPhone);
+          if (settings.aiEnabled && !isPaused) {
+            this.processAiResponse(settings, tenantId, fromPhone, senderName, bodyText, contactObj.id)
+              .catch(err => this.logger.error(`Erro assíncrono no agente de IA do Messenger para ${fromPhone}: ${err.message}`));
+          }
+        }
+      }
+    }
+  }
+
+  private async handleInstagramWebhook(body: any): Promise<void> {
+    const entries = body.entry || [];
+    for (const entry of entries) {
+      const instagramId = entry.id;
+      const settings = await this.whatsappRepository.findSettingsByInstagramBusinessAccountId(instagramId);
+      if (!settings) {
+        this.logger.warn(`Mensagem do Instagram recebida na conta ${instagramId} não pôde ser roteada: tenant não encontrado.`);
+        continue;
+      }
+
+      const tenantId = settings.tenantId;
+
+      const messaging = entry.messaging || [];
+      for (const item of messaging) {
+        if (item.message && item.sender && item.sender.id !== instagramId) {
+          const senderIgsid = item.sender.id;
+          const messageId = item.message.mid;
+          const bodyText = item.message.text || '';
+          
+          if (!bodyText) continue;
+
+          const fromPhone = `ig_${senderIgsid}`;
+          const senderName = 'Cliente Instagram';
+
+          const contactObj = await this.contactService.findOrCreateFromWhatsapp({
+            tenantId,
+            name: senderName,
+            phone: fromPhone,
+          });
+
+          await this.ensureActiveDeal(tenantId, contactObj, 'Instagram');
+
+          const inboundLog = new WhatsappLog(
+            messageId,
+            tenantId,
+            contactObj.id,
+            senderName,
+            fromPhone,
+            'inbound',
+            'text',
+            null,
+            {},
+            bodyText,
+            'delivered',
+            null,
+            new Date(),
+            new Date(),
+            'instagram',
+          );
+
+          const savedLog = await this.whatsappRepository.saveLog(inboundLog);
+          this.realTimeService.emitToTenant(tenantId, 'whatsapp-message', savedLog);
+          this.logger.log(`Mensagem do Instagram recebida de ${senderIgsid} salva para o tenant ${tenantId}.`);
+
+          const isPaused = settings.aiPausedPhones && settings.aiPausedPhones.includes(fromPhone);
+          if (settings.aiEnabled && !isPaused) {
+            this.processAiResponse(settings, tenantId, fromPhone, senderName, bodyText, contactObj.id)
+              .catch(err => this.logger.error(`Erro assíncrono no agente de IA do Instagram para ${fromPhone}: ${err.message}`));
+          }
+        }
+      }
     }
   }
 }

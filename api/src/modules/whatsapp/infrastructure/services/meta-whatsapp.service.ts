@@ -812,4 +812,92 @@ export class MetaWhatsappService {
       // Permitimos que o fluxo continue para que a mensagem seja apagada localmente no CRM
     }
   }
+
+  async sendFacebookMessage(
+    settings: WhatsappSettings,
+    recipientPsid: string,
+    bodyText: string,
+  ): Promise<{ messageId: string }> {
+    const cleanPsid = recipientPsid.replace('fb_', '');
+
+    if (!settings.facebookPageAccessToken || settings.facebookPageAccessToken.startsWith('mock')) {
+      this.logger.warn(`Utilizando envio de mensagem de Facebook simulado (Mock) para ${cleanPsid}.`);
+      return { messageId: `fb_mid.${crypto.randomUUID ? crypto.randomUUID() : Date.now()}` };
+    }
+
+    const url = `https://graph.facebook.com/v17.0/me/messages?access_token=${settings.facebookPageAccessToken}`;
+
+    const body = {
+      recipient: {
+        id: cleanPsid,
+      },
+      message: {
+        text: bodyText,
+      },
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData?.error?.message || 'Erro desconhecido na Meta Messenger API.');
+      }
+
+      return { messageId: resData?.message_id || resData?.messages?.[0]?.id || `fb_mid.${Date.now()}` };
+    } catch (error) {
+      this.logger.error(`Falha no disparo de mensagem no Messenger para ${cleanPsid}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async sendInstagramMessage(
+    settings: WhatsappSettings,
+    recipientIgsid: string,
+    bodyText: string,
+  ): Promise<{ messageId: string }> {
+    const cleanIgsid = recipientIgsid.replace('ig_', '');
+
+    if (!settings.facebookPageAccessToken || settings.facebookPageAccessToken.startsWith('mock')) {
+      this.logger.warn(`Utilizando envio de mensagem de Instagram simulado (Mock) para ${cleanIgsid}.`);
+      return { messageId: `ig_mid.${crypto.randomUUID ? crypto.randomUUID() : Date.now()}` };
+    }
+
+    const url = `https://graph.facebook.com/v17.0/me/messages?access_token=${settings.facebookPageAccessToken}`;
+
+    const body = {
+      recipient: {
+        id: cleanIgsid,
+      },
+      message: {
+        text: bodyText,
+      },
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const resData = await response.json();
+      if (!response.ok) {
+        throw new Error(resData?.error?.message || 'Erro desconhecido na Meta Instagram API.');
+      }
+
+      return { messageId: resData?.message_id || resData?.messages?.[0]?.id || `ig_mid.${Date.now()}` };
+    } catch (error) {
+      this.logger.error(`Falha no disparo de mensagem no Instagram para ${cleanIgsid}: ${error.message}`);
+      throw error;
+    }
+  }
 }

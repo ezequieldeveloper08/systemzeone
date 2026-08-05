@@ -35,17 +35,15 @@ export function LoginForm() {
         <Image
           src="/logo-dark-mode.svg"
           alt="Zemobi Logo"
-          width={130}
-          height={32}
-          className="h-8 w-auto dark:block hidden mb-2"
+          width={100} height={48}
+          className="dark:block hidden mb-6"
           priority
         />
         <Image
           src="/logo-ligth-mode.svg"
           alt="Zemobi Logo"
-          width={130}
-          height={32}
-          className="h-8 w-auto dark:hidden block mb-2"
+          width={100} height={48}
+          className="dark:hidden block mb-6"
           priority
         />
         <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">

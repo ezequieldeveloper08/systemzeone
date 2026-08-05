@@ -13,6 +13,9 @@ export interface WhatsappConfig {
   aiModel?: string
   aiPausedPhones: string[]
   aiActiveTools?: string[]
+  facebookPageId?: string
+  facebookPageAccessToken?: string
+  instagramBusinessAccountId?: string
 }
 
 export type TemplateStatus = "PENDING" | "APPROVED" | "REJECTED"

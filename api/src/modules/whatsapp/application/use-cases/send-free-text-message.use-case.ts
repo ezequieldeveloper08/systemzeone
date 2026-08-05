@@ -30,6 +30,7 @@ export class SendFreeTextMessageUseCase {
       interactiveType?: 'cta_url' | 'list' | 'button';
       interactiveData?: any;
       isAi?: boolean;
+      channel?: 'whatsapp' | 'instagram' | 'facebook';
     },
   ): Promise<WhatsappLog> {
     const settings = await this.whatsappRepository.findSettingsByTenantId(tenantId);
@@ -52,8 +53,21 @@ export class SendFreeTextMessageUseCase {
     let response: { messageId: string };
     const messageType = data.type || 'text';
     let logBodyText = data.bodyText;
+    const channel = data.channel || 'whatsapp';
 
-    if (messageType === 'image') {
+    if (channel === 'facebook') {
+      response = await this.metaWhatsappService.sendFacebookMessage(
+        settings,
+        data.recipientPhone,
+        data.bodyText,
+      );
+    } else if (channel === 'instagram') {
+      response = await this.metaWhatsappService.sendInstagramMessage(
+        settings,
+        data.recipientPhone,
+        data.bodyText,
+      );
+    } else if (messageType === 'image') {
       response = await this.metaWhatsappService.sendImageMessage(
         settings,
         data.recipientPhone,
@@ -124,6 +138,7 @@ export class SendFreeTextMessageUseCase {
       null,
       new Date(),
       new Date(),
+      channel,
     );
 
     // If the contact exists and status is NEW, change it to IN_SERVICE

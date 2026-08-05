@@ -45,4 +45,19 @@ export class SaveSettingsDto {
   @ApiProperty({ example: ['buscarVeiculosEstoque'], required: false, type: [String] })
   @IsOptional()
   aiActiveTools?: string[];
+
+  @ApiProperty({ example: '1029384756', required: false })
+  @IsString()
+  @IsOptional()
+  facebookPageId?: string;
+
+  @ApiProperty({ example: 'EAAGb...', required: false })
+  @IsString()
+  @IsOptional()
+  facebookPageAccessToken?: string;
+
+  @ApiProperty({ example: '9876543210', required: false })
+  @IsString()
+  @IsOptional()
+  instagramBusinessAccountId?: string;
 }

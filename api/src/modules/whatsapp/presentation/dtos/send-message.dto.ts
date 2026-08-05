@@ -40,4 +40,9 @@ export class SendMessageDto {
   @ApiProperty({ example: {}, required: false })
   @IsOptional()
   interactiveData?: any;
+
+  @ApiProperty({ example: 'whatsapp', required: false, enum: ['whatsapp', 'instagram', 'facebook'] })
+  @IsString()
+  @IsOptional()
+  channel?: 'whatsapp' | 'instagram' | 'facebook';
 }

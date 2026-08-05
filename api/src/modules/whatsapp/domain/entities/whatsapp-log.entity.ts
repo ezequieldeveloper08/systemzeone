@@ -14,5 +14,6 @@ export class WhatsappLog {
     public errorMessage: string | null,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
+    public channel: 'whatsapp' | 'instagram' | 'facebook' = 'whatsapp',
   ) {}
 }

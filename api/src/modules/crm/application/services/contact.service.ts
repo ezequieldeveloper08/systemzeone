@@ -26,6 +26,9 @@ export class ContactService {
   ) { }
 
   normalizePhone(phone: string): string {
+    if (phone && (phone.startsWith('fb_') || phone.startsWith('ig_'))) {
+      return phone;
+    }
     let clean = phone.replace(/\D/g, '');
     if (clean.length === 10 || clean.length === 11) {
       clean = '55' + clean;

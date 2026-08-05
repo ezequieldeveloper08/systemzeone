@@ -1,0 +1,53 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ofertahub_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ofertahub
+      MYSQL_USER: ofertahub_user
+      MYSQL_PASSWORD: ofertahub_pass
+    ports:
+      - '3307:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ofertahub_phpmyadmin
+    restart: always
+    ports:
+      - '8080:80'
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    depends_on:
+      - mysql
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: ofertahub_api
+    restart: always
+    ports:
+      - '3001:3001'
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: 'mysql://ofertahub_user:ofertahub_pass@mysql:3306/ofertahub'
+      JWT_SECRET: 'super-secret-ofertahub-jwt-key-2026'
+      JWT_EXPIRES_IN: '7d'
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
