@@ -26,16 +26,16 @@ export class PropertyOrmEntity {
   @Column({ type: 'varchar', nullable: true })
   slug: string | null;
 
-  @Column({ type: 'varchar' })
-  type: string;
+  @Column({ type: 'varchar', nullable: true })
+  type: string | null;
 
-  @Column({ type: 'varchar' })
-  purpose: string;
+  @Column({ type: 'varchar', nullable: true })
+  purpose: string | null;
 
-  @Column({ type: 'varchar' })
-  status: string;
+  @Column({ type: 'varchar', nullable: true })
+  status: string | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   address: {
     zipCode?: string;
     street: string;
@@ -48,16 +48,16 @@ export class PropertyOrmEntity {
     latitude?: number;
     longitude?: number;
     hideExactAddress?: boolean;
-  };
+  } | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   area: {
     total?: number;
     usable?: number;
     land?: number;
-  };
+  } | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   rooms: {
     bedrooms: number;
     suites: number;
@@ -65,9 +65,9 @@ export class PropertyOrmEntity {
     parkingSpaces: number;
     livingRooms?: number;
     kitchens?: number;
-  };
+  } | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   details: {
     floor?: number;
     totalFloors?: number;
@@ -75,9 +75,9 @@ export class PropertyOrmEntity {
     furnishing: FurnishingType;
     acceptsPets?: boolean;
     accessible?: boolean;
-  };
+  } | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   pricing: {
     rentPrice?: number;
     salePrice?: number;
@@ -85,9 +85,9 @@ export class PropertyOrmEntity {
     propertyTax?: number;
     fireInsurance?: number;
     serviceFee?: number;
-  };
+  } | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   features: {
     balcony?: boolean;
     airConditioning?: boolean;
@@ -102,7 +102,7 @@ export class PropertyOrmEntity {
     closet?: boolean;
     bathtub?: boolean;
     elevator?: boolean;
-  };
+  } | null;
 
   @Column({ type: 'jsonb', nullable: true })
   condominium: {
@@ -136,22 +136,22 @@ export class PropertyOrmEntity {
     smokingAllowed?: boolean;
   } | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   media: {
     cover?: string;
     images: PropertyImage[];
     videos?: PropertyVideo[];
     virtualTourUrl?: string;
-  };
+  } | null;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', nullable: true })
   commercial: {
     exclusive?: boolean;
     featured?: boolean;
     newListing?: boolean;
     availableForVisits?: boolean;
     availableFrom?: string;
-  };
+  } | null;
 
   @Column({ type: 'jsonb', nullable: true })
   owner: {

@@ -55,7 +55,7 @@ export function Sidebar() {
   const [realEstateOpen, setRealEstateOpen] = useState(true)
   const [menuOpen, setMenuOpen] = useState(true)
   const [digitalShowcaseOpen, setDigitalShowcaseOpen] = useState(true)
-  const [whatsappOpen, setWhatsappOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [financesOpen, setFinancesOpen] = useState(true)
 
   const tenantMenuRef = useRef<HTMLDivElement>(null)
@@ -158,16 +158,8 @@ export function Sidebar() {
     {
       label: "Conversas",
       icon: MessageSquare,
-      isCollapsible: true,
-      isOpen: whatsappOpen,
-      setIsOpen: setWhatsappOpen,
-      subItems: [
-        { label: "Chat Ao Vivo", href: "/admin/whatsapp/chat", active: pathname === "/admin/whatsapp/chat" },
-        { label: "Configuração API", href: "/admin/whatsapp/settings", active: pathname === "/admin/whatsapp/settings" },
-        { label: "Modelos de Mensagem", href: "/admin/whatsapp/templates", active: pathname === "/admin/whatsapp/templates" },
-        { label: "Histórico de Envios", href: "/admin/whatsapp/history", active: pathname === "/admin/whatsapp/history" },
-        { label: "Fluxos (Flows)", href: "/admin/whatsapp/flows", active: pathname === "/admin/whatsapp/flows" },
-      ],
+      href: "/admin/whatsapp/chat",
+      active: pathname === "/admin/whatsapp/chat" || pathname.startsWith("/admin/whatsapp/chat"),
     },
     {
       label: "Contatos",
@@ -203,6 +195,19 @@ export function Sidebar() {
         { label: "Fluxo de Caixa", href: "/admin/finances?tab=flow", active: pathname === "/admin/finances" && (currentTab === "flow" || !currentTab) },
         { label: "Contas a Receber", href: "/admin/finances?tab=receivables", active: pathname === "/admin/finances" && currentTab === "receivables" },
         { label: "Contas a Pagar", href: "/admin/finances?tab=payables", active: pathname === "/admin/finances" && currentTab === "payables" },
+      ],
+    },
+    {
+      label: "Configurações",
+      icon: Settings,
+      isCollapsible: true,
+      isOpen: settingsOpen,
+      setIsOpen: setSettingsOpen,
+      subItems: [
+        { label: "Integrações", href: "/admin/whatsapp/settings", active: pathname === "/admin/whatsapp/settings" },
+        { label: "Modelos de Mensagem", href: "/admin/whatsapp/templates", active: pathname === "/admin/whatsapp/templates" },
+        { label: "Fluxos (Flows)", href: "/admin/whatsapp/flows", active: pathname === "/admin/whatsapp/flows" },
+        { label: "Histórico de Envios", href: "/admin/whatsapp/history", active: pathname === "/admin/whatsapp/history" },
       ],
     }
   )

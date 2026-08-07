@@ -140,12 +140,14 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
   const [agencyName, setAgencyName] = useState("")
   const [seoTitle, setSeoTitle] = useState("")
   const [seoDescription, setSeoDescription] = useState("")
+  const [hasLoadedInitial, setHasLoadedInitial] = useState(false)
 
   // Pre-fill values when editing
   useEffect(() => {
-    if (isEdit && properties.length > 0) {
+    if (isEdit && properties.length > 0 && !hasLoadedInitial) {
       const prop = properties.find((p) => p.id === propertyId)
       if (prop) {
+        setHasLoadedInitial(true)
         setCode(prop.code || "")
         setTitle(prop.title)
         setDescription(prop.description || "")

@@ -20,22 +20,33 @@ export class PropertyRepository implements IPropertyRepository {
     domain.title = orm.title;
     domain.description = orm.description || undefined;
     domain.slug = orm.slug || undefined;
-    domain.type = orm.type as PropertyType;
-    domain.purpose = orm.purpose as PropertyPurpose;
-    domain.status = orm.status as PropertyStatus;
-    domain.address = orm.address;
-    domain.area = orm.area;
-    domain.rooms = orm.rooms;
+    domain.type = (orm.type as PropertyType) || 'apartment';
+    domain.purpose = (orm.purpose as PropertyPurpose) || 'sale';
+    domain.status = (orm.status as PropertyStatus) || 'draft';
+    domain.address = orm.address || {
+      street: "",
+      neighborhood: "",
+      city: "",
+      state: "",
+      country: "Brasil"
+    };
+    domain.area = orm.area || {};
+    domain.rooms = orm.rooms || {
+      bedrooms: 0,
+      suites: 0,
+      bathrooms: 0,
+      parkingSpaces: 0
+    };
     domain.details = orm.details ? {
       ...orm.details,
-      furnishing: orm.details.furnishing as FurnishingType
-    } : orm.details;
-    domain.pricing = orm.pricing;
-    domain.features = orm.features;
+      furnishing: (orm.details.furnishing as FurnishingType) || 'unfurnished'
+    } : { furnishing: 'unfurnished' };
+    domain.pricing = orm.pricing || {};
+    domain.features = orm.features || {};
     domain.condominium = orm.condominium || undefined;
     domain.rules = orm.rules || undefined;
-    domain.media = orm.media;
-    domain.commercial = orm.commercial;
+    domain.media = orm.media || { images: [] };
+    domain.commercial = orm.commercial || {};
     domain.owner = orm.owner || undefined;
     domain.realtor = orm.realtor || undefined;
     domain.agency = orm.agency || undefined;

@@ -103,14 +103,16 @@ export function PropertyList() {
             // Defensive fallbacks for old vs new schema properties
             const bedroomsCount = property.rooms?.bedrooms ?? (property as any).bedrooms ?? 0
             const bathroomsCount = property.rooms?.bathrooms ?? (property as any).bathrooms ?? 0
-            const totalAreaSize = property.area?.total ?? property.area?.usable ?? (property as any).area ?? 0
+            const totalAreaSize = property.area?.total ?? 
+                                  property.area?.usable ?? 
+                                  (typeof (property as any).area === "number" ? (property as any).area : 0)
             const salePriceVal = property.pricing?.salePrice ?? property.pricing?.rentPrice ?? (property as any).price ?? 0
             const rentPriceVal = property.pricing?.rentPrice ?? null
             
             const coverImageSrc = property.media?.cover ?? 
                                   property.media?.images?.[0]?.url ?? 
                                   ((property as any).images && (property as any).images[0]) ?? 
-                                  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=80"
+                                  null
 
             const isDraft = property.status === "draft"
             const isInactive = property.status === "inactive"
@@ -122,13 +124,20 @@ export function PropertyList() {
               >
                 <div>
                   {/* IMAGE HEADER */}
-                  <div className="relative h-48 w-full bg-neutral-100 overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={coverImageSrc}
-                      alt={property.title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                  <div className="relative h-48 w-full bg-neutral-100 dark:bg-neutral-900 overflow-hidden flex items-center justify-center border-b border-neutral-100 dark:border-neutral-900">
+                    {coverImageSrc ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={coverImageSrc}
+                        alt={property.title}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-600 gap-1.5">
+                        <Building className="size-10 stroke-[1.5]" />
+                        <span className="text-[9px] uppercase font-bold tracking-wider">Sem Imagem</span>
+                      </div>
+                    )}
                     <div className="absolute top-3 left-3 bg-neutral-900/80 backdrop-blur-xs text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Tag className="size-3" />
                       {getTypeLabel(property.type)}
