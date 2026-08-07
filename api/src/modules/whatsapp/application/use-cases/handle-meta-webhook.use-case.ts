@@ -803,6 +803,7 @@ ${historyContext}
 
       // 6. Resolve base API URL (production APP_URL or localhost fallback)
       const apiBaseUrl = process.env.APP_URL;
+      this.logger.log(`APP_URL: ${apiBaseUrl}`);
 
       const fileUrl = `${apiBaseUrl}/uploads/${filename}`;
       this.logger.log(`Mídia baixada da Meta e salva localmente: ${fileUrl}`);
