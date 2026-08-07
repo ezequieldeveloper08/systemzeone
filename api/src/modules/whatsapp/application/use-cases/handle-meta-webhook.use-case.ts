@@ -41,7 +41,7 @@ async function transcodeOggToOpus(filePath: string): Promise<void> {
       .on('end', () => {
         try {
           fs.unlinkSync(tempPath);
-        } catch (e) {}
+        } catch (e) { }
         resolve();
       })
       .on('error', (err) => {
@@ -50,7 +50,7 @@ async function transcodeOggToOpus(filePath: string): Promise<void> {
             fs.unlinkSync(filePath);
           }
           fs.renameSync(tempPath, filePath);
-        } catch (e) {}
+        } catch (e) { }
         reject(err);
       });
   });
@@ -77,7 +77,7 @@ export class HandleMetaWebhookUseCase {
     private readonly menuItemRepository: IMenuItemRepository,
     @Inject(IOrderRepositoryToken)
     private readonly orderRepository: IOrderRepository,
-  ) {}
+  ) { }
 
   async execute(body: any): Promise<void> {
     if (!body) {
@@ -141,7 +141,7 @@ export class HandleMetaWebhookUseCase {
             const fromPhone = message.from;
             const messageId = message.id;
             const messageType = message.type; // text, image, etc.
-            
+
             // Find sender name from contacts
             const contact = value.contacts?.find((c: any) => c.wa_id === fromPhone);
             const senderName = contact?.profile?.name || fromPhone;
@@ -355,9 +355,9 @@ export class HandleMetaWebhookUseCase {
       const tenantInstagram = tenantInfo.instagram || 'Não especificado';
 
       const businessType = (settings as any).businessType || 'crm_only';
-      const systemInstruction = settings.aiAgentInstructions || 
+      const systemInstruction = settings.aiAgentInstructions ||
         `Você é um assistente virtual atencioso para a empresa ${tenantName}. Responda de forma profissional, simpática e prestativa.`;
-      
+
       const historyContext = recentLogs
         .map(log => {
           const speaker = log.messageDirection === 'inbound' ? 'Cliente' : 'Assistente';
@@ -563,7 +563,7 @@ ${historyContext}
       if (functionCall) {
         this.logger.log(`Gemini solicitou chamada de ferramenta: ${functionCall.name} com args: ${JSON.stringify(functionCall.args)}`);
         let functionResult = {};
-        
+
         try {
           if (functionCall.name === 'buscarVeiculosEstoque') {
             const args = functionCall.args || {};
@@ -699,7 +699,7 @@ ${historyContext}
 
     } catch (err) {
       this.logger.error(`Erro ao processar resposta da IA para ${fromPhone}: ${err.message}`);
-      
+
       try {
         const errorLog = new WhatsappLog(
           crypto.randomUUID ? crypto.randomUUID() : `wamid.err_${Date.now()}`,
@@ -802,7 +802,7 @@ ${historyContext}
       }
 
       // 6. Resolve base API URL (production APP_URL or localhost fallback)
-      const apiBaseUrl = process.env.APP_URL || 'http://localhost:3001';
+      const apiBaseUrl = process.env.APP_URL;
 
       const fileUrl = `${apiBaseUrl}/uploads/${filename}`;
       this.logger.log(`Mídia baixada da Meta e salva localmente: ${fileUrl}`);
@@ -851,7 +851,7 @@ ${historyContext}
           const senderPsid = item.sender.id;
           const messageId = item.message.mid;
           let bodyText = item.message.text || '';
-          
+
           let dbMessageType: 'text' | 'image' | 'audio' | 'document' | 'interactive' = 'text';
           const variables: Record<string, string> = {};
 
@@ -961,7 +961,7 @@ ${historyContext}
           const senderIgsid = item.sender.id;
           const messageId = item.message.mid;
           let bodyText = item.message.text || '';
-          
+
           let dbMessageType: 'text' | 'image' | 'audio' | 'document' | 'interactive' = 'text';
           const variables: Record<string, string> = {};
 
