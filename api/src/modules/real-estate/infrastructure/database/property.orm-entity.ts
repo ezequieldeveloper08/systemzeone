@@ -14,7 +14,7 @@ export class PropertyOrmEntity {
   @JoinColumn({ name: 'tenant_id' })
   tenant: TenantOrmEntity;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   code: string | null;
 
   @Column()
@@ -23,16 +23,16 @@ export class PropertyOrmEntity {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   slug: string | null;
 
-  @Column()
+  @Column({ type: 'varchar' })
   type: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   purpose: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   status: string;
 
   @Column({ type: 'jsonb' })
