@@ -141,7 +141,17 @@ export class ContactService {
 
       contact.lastContactAt = new Date();
 
-      if (!contact.name && data.name) {
+      if (
+        (!contact.name ||
+          contact.name === 'Cliente Instagram' ||
+          contact.name === 'Cliente Messenger' ||
+          contact.name.startsWith('ig_') ||
+          contact.name.startsWith('fb_') ||
+          contact.name === contact.phone) &&
+        data.name &&
+        data.name !== 'Cliente Instagram' &&
+        data.name !== 'Cliente Messenger'
+      ) {
         contact.name = data.name;
       }
 

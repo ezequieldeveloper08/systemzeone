@@ -23,7 +23,7 @@ export class SendFreeTextMessageUseCase {
     data: {
       recipientPhone: string;
       recipientName: string;
-      bodyText: string;
+      bodyText?: string;
       contactId?: string;
       type?: 'text' | 'image' | 'interactive' | 'audio';
       imageUrl?: string;
@@ -50,36 +50,68 @@ export class SendFreeTextMessageUseCase {
       }
     }
 
+    // Resolve base API URL (ngrok public url or localhost fallback) for outbound media attachments
+    let metaImageUrl = data.imageUrl;
+    if (metaImageUrl && (metaImageUrl.includes('localhost') || metaImageUrl.includes('127.0.0.1'))) {
+      try {
+        const tunnelRes = await fetch('http://127.0.0.1:4040/api/tunnels');
+        if (tunnelRes.ok) {
+          const tunnelsData = await tunnelRes.json();
+          const activeTunnel = tunnelsData.tunnels?.find((t: any) => t.config?.addr?.includes('3001'));
+          if (activeTunnel?.public_url) {
+            const parsedUrl = new URL(metaImageUrl);
+            metaImageUrl = `${activeTunnel.public_url}${parsedUrl.pathname}${parsedUrl.search}`;
+          }
+        }
+      } catch (e) {
+        // Silent catch
+      }
+    }
+
     let response: { messageId: string };
     const messageType = data.type || 'text';
-    let logBodyText = data.bodyText;
+    let logBodyText = data.bodyText || '';
     const channel = data.channel || 'whatsapp';
 
     if (channel === 'facebook') {
       response = await this.metaWhatsappService.sendFacebookMessage(
         settings,
         data.recipientPhone,
-        data.bodyText,
+        data.bodyText || '',
+        messageType,
+        metaImageUrl,
       );
+      if (messageType === 'image') {
+        logBodyText = `[Imagem] ${data.bodyText || data.imageUrl || ''}`;
+      } else if (messageType === 'audio') {
+        logBodyText = `[Áudio]`;
+      }
     } else if (channel === 'instagram') {
       response = await this.metaWhatsappService.sendInstagramMessage(
         settings,
         data.recipientPhone,
-        data.bodyText,
+        data.bodyText || '',
+        messageType,
+        metaImageUrl,
       );
+      if (messageType === 'image') {
+        logBodyText = `[Imagem] ${data.bodyText || data.imageUrl || ''}`;
+      } else if (messageType === 'audio') {
+        logBodyText = `[Áudio]`;
+      }
     } else if (messageType === 'image') {
       response = await this.metaWhatsappService.sendImageMessage(
         settings,
         data.recipientPhone,
-        data.imageUrl || '',
-        data.bodyText,
+        metaImageUrl || '',
+        data.bodyText || '',
       );
       logBodyText = `[Imagem] ${data.bodyText || data.imageUrl || ''}`;
     } else if (messageType === 'audio') {
       response = await this.metaWhatsappService.sendAudioMessage(
         settings,
         data.recipientPhone,
-        data.imageUrl || '',
+        metaImageUrl || '',
       );
       logBodyText = `[Áudio]`;
     } else if (messageType === 'interactive') {
@@ -105,7 +137,7 @@ export class SendFreeTextMessageUseCase {
       response = await this.metaWhatsappService.sendFreeTextMessage(
         settings,
         data.recipientPhone,
-        data.bodyText,
+        data.bodyText || '',
       );
     }
 

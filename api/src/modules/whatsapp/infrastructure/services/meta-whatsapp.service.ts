@@ -817,6 +817,8 @@ export class MetaWhatsappService {
     settings: WhatsappSettings,
     recipientPsid: string,
     bodyText: string,
+    type: 'text' | 'image' | 'audio' | 'interactive' = 'text',
+    imageUrl?: string,
   ): Promise<{ messageId: string }> {
     const cleanPsid = recipientPsid.replace('fb_', '');
 
@@ -827,13 +829,39 @@ export class MetaWhatsappService {
 
     const url = `https://graph.facebook.com/v17.0/me/messages?access_token=${settings.facebookPageAccessToken}`;
 
+    let messageObj: any = { text: bodyText };
+
+    if (type === 'image' && imageUrl) {
+      messageObj = {
+        attachment: {
+          type: 'image',
+          payload: {
+            url: imageUrl,
+            is_reusable: true,
+          },
+        },
+      };
+    } else if (type === 'audio' && imageUrl) {
+      messageObj = {
+        attachment: {
+          type: 'audio',
+          payload: {
+            url: imageUrl,
+            is_reusable: true,
+          },
+        },
+      };
+    } else {
+      if (!bodyText) {
+        throw new Error('Texto em branco');
+      }
+    }
+
     const body = {
       recipient: {
         id: cleanPsid,
       },
-      message: {
-        text: bodyText,
-      },
+      message: messageObj,
     };
 
     try {
@@ -861,6 +889,8 @@ export class MetaWhatsappService {
     settings: WhatsappSettings,
     recipientIgsid: string,
     bodyText: string,
+    type: 'text' | 'image' | 'audio' | 'interactive' = 'text',
+    imageUrl?: string,
   ): Promise<{ messageId: string }> {
     const cleanIgsid = recipientIgsid.replace('ig_', '');
 
@@ -869,15 +899,41 @@ export class MetaWhatsappService {
       return { messageId: `ig_mid.${crypto.randomUUID ? crypto.randomUUID() : Date.now()}` };
     }
 
-    const url = `https://graph.facebook.com/v17.0/me/messages?access_token=${settings.facebookPageAccessToken}`;
+    const url = `https://graph.instagram.com/v25.0/me/messages`;
+
+    let messageObj: any = { text: bodyText };
+
+    if (type === 'image' && imageUrl) {
+      messageObj = {
+        attachment: {
+          type: 'image',
+          payload: {
+            url: imageUrl,
+            is_reusable: true,
+          },
+        },
+      };
+    } else if (type === 'audio' && imageUrl) {
+      messageObj = {
+        attachment: {
+          type: 'audio',
+          payload: {
+            url: imageUrl,
+            is_reusable: true,
+          },
+        },
+      };
+    } else {
+      if (!bodyText) {
+        throw new Error('Texto em branco');
+      }
+    }
 
     const body = {
       recipient: {
         id: cleanIgsid,
       },
-      message: {
-        text: bodyText,
-      },
+      message: messageObj,
     };
 
     try {
@@ -885,6 +941,7 @@ export class MetaWhatsappService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${settings.facebookPageAccessToken}`,
         },
         body: JSON.stringify(body),
       });

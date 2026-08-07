@@ -801,20 +801,8 @@ ${historyContext}
         }
       }
 
-      // 6. Resolve base API URL (ngrok public url or localhost fallback)
-      let apiBaseUrl = 'http://localhost:3001';
-      try {
-        const tunnelRes = await fetch('http://127.0.0.1:4040/api/tunnels');
-        if (tunnelRes.ok) {
-          const tunnelsData = await tunnelRes.json();
-          const activeTunnel = tunnelsData.tunnels?.find((t: any) => t.config?.addr?.includes('3001'));
-          if (activeTunnel?.public_url) {
-            apiBaseUrl = activeTunnel.public_url;
-          }
-        }
-      } catch (e) {
-        this.logger.warn(`Não foi possível detectar túnel ngrok no webhook: ${e.message}`);
-      }
+      // 6. Resolve base API URL (production APP_URL or localhost fallback)
+      const apiBaseUrl = process.env.APP_URL || 'http://localhost:3001';
 
       const fileUrl = `${apiBaseUrl}/uploads/${filename}`;
       this.logger.log(`Mídia baixada da Meta e salva localmente: ${fileUrl}`);
@@ -862,12 +850,58 @@ ${historyContext}
         if (item.message && item.sender && item.sender.id !== pageId) {
           const senderPsid = item.sender.id;
           const messageId = item.message.mid;
-          const bodyText = item.message.text || '';
+          let bodyText = item.message.text || '';
           
+          let dbMessageType: 'text' | 'image' | 'audio' | 'document' | 'interactive' = 'text';
+          const variables: Record<string, string> = {};
+
+          if (item.message.attachments && item.message.attachments.length > 0) {
+            const attachment = item.message.attachments[0];
+            const type = attachment.type;
+            const url = attachment.payload?.url;
+
+            if (type === 'image') {
+              dbMessageType = 'image';
+              bodyText = bodyText || '[Imagem]';
+              variables.imageUrl = url;
+            } else if (type === 'audio') {
+              dbMessageType = 'audio';
+              bodyText = bodyText || '[Áudio]';
+              variables.audioUrl = url;
+            } else if (type === 'video') {
+              dbMessageType = 'text';
+              bodyText = bodyText || `[Vídeo] ${url}`;
+            } else {
+              dbMessageType = 'text';
+              bodyText = bodyText || `[Arquivo: ${type}] ${url}`;
+            }
+          }
+
           if (!bodyText) continue;
 
           const fromPhone = `fb_${senderPsid}`;
-          const senderName = 'Cliente Messenger';
+          let senderName = 'Cliente Messenger';
+
+          // Try to fetch the real name from Facebook Graph API
+          if (settings.facebookPageAccessToken) {
+            try {
+              const profileUrl = `https://graph.facebook.com/v17.0/${senderPsid}?fields=first_name,last_name&access_token=${settings.facebookPageAccessToken}`;
+              const response = await fetch(profileUrl);
+              if (response.ok) {
+                const profileData = await response.json();
+                if (profileData) {
+                  const firstName = profileData.first_name || '';
+                  const lastName = profileData.last_name || '';
+                  const fullName = `${firstName} ${lastName}`.trim();
+                  if (fullName) {
+                    senderName = fullName;
+                  }
+                }
+              }
+            } catch (err) {
+              this.logger.warn(`Erro ao buscar perfil do Messenger para ${senderPsid}: ${err.message}`);
+            }
+          }
 
           const contactObj = await this.contactService.findOrCreateFromWhatsapp({
             tenantId,
@@ -884,9 +918,9 @@ ${historyContext}
             senderName,
             fromPhone,
             'inbound',
-            'text',
+            dbMessageType,
             null,
-            {},
+            variables,
             bodyText,
             'delivered',
             null,
@@ -926,12 +960,53 @@ ${historyContext}
         if (item.message && item.sender && item.sender.id !== instagramId) {
           const senderIgsid = item.sender.id;
           const messageId = item.message.mid;
-          const bodyText = item.message.text || '';
+          let bodyText = item.message.text || '';
           
+          let dbMessageType: 'text' | 'image' | 'audio' | 'document' | 'interactive' = 'text';
+          const variables: Record<string, string> = {};
+
+          if (item.message.attachments && item.message.attachments.length > 0) {
+            const attachment = item.message.attachments[0];
+            const type = attachment.type;
+            const url = attachment.payload?.url;
+
+            if (type === 'image') {
+              dbMessageType = 'image';
+              bodyText = bodyText || '[Imagem]';
+              variables.imageUrl = url;
+            } else if (type === 'audio') {
+              dbMessageType = 'audio';
+              bodyText = bodyText || '[Áudio]';
+              variables.audioUrl = url;
+            } else if (type === 'video') {
+              dbMessageType = 'text';
+              bodyText = bodyText || `[Vídeo] ${url}`;
+            } else {
+              dbMessageType = 'text';
+              bodyText = bodyText || `[Arquivo: ${type}] ${url}`;
+            }
+          }
+
           if (!bodyText) continue;
 
           const fromPhone = `ig_${senderIgsid}`;
-          const senderName = 'Cliente Instagram';
+          let senderName = 'Cliente Instagram';
+
+          // Try to fetch the real name from Instagram Graph API
+          if (settings.facebookPageAccessToken) {
+            try {
+              const profileUrl = `https://graph.instagram.com/v25.0/${senderIgsid}?fields=name,username&access_token=${settings.facebookPageAccessToken}`;
+              const response = await fetch(profileUrl);
+              if (response.ok) {
+                const profileData = await response.json();
+                if (profileData) {
+                  senderName = profileData.name || profileData.username || senderName;
+                }
+              }
+            } catch (err) {
+              this.logger.warn(`Erro ao buscar perfil do Instagram para ${senderIgsid}: ${err.message}`);
+            }
+          }
 
           const contactObj = await this.contactService.findOrCreateFromWhatsapp({
             tenantId,
@@ -948,9 +1023,9 @@ ${historyContext}
             senderName,
             fromPhone,
             'inbound',
-            'text',
+            dbMessageType,
             null,
-            {},
+            variables,
             bodyText,
             'delivered',
             null,

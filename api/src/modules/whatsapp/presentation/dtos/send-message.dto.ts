@@ -12,10 +12,10 @@ export class SendMessageDto {
   @IsNotEmpty()
   recipientName: string;
 
-  @ApiProperty({ example: 'Olá, obrigado pelo retorno! Em que posso ajudar?', description: 'Corpo da mensagem de texto livre' })
+  @ApiProperty({ example: 'Olá, obrigado pelo retorno! Em que posso ajudar?', description: 'Corpo da mensagem de texto livre', required: false })
   @IsString()
-  @IsNotEmpty()
-  bodyText: string;
+  @IsOptional()
+  bodyText?: string;
 
   @ApiProperty({ example: 'a2b3c4d5-e6f7-8901-2345-6789abcdef01', required: false, description: 'ID do Contato correspondente' })
   @IsString()

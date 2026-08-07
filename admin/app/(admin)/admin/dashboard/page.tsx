@@ -1,10 +1,12 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { useVehicles } from "@/features/vehicles/hooks/useVehicles"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { DashboardCharts } from "@/features/dashboard/components/DashboardCharts"
+import { leadsService } from "@/features/leads/services/leadsService"
+import { crmService, Activity } from "@/features/crm/services/crmService"
 import {
   CarFront,
   DollarSign,
@@ -19,6 +21,9 @@ import {
 export default function AdminDashboardPage() {
   const { activeTenant } = useAuth()
   const { vehicles, totalCount } = useVehicles()
+  const [leadsCount, setLeadsCount] = useState(0)
+  const [proposalsCount, setProposalsCount] = useState(0)
+  const [activities, setActivities] = useState<Activity[]>([])
 
   // Calculate dynamic stats
   const totalValue = vehicles.reduce((sum, v) => sum + v.price, 0)
@@ -33,10 +38,16 @@ export default function AdminDashboardPage() {
     }).format(value)
   }
 
-  // Preset mock stats based on tenant
-  const isCapri = activeTenant?.id === "t-1"
-  const leadsCount = isCapri ? 24 : totalCount > 0 ? 8 : 0
-  const proposalsCount = isCapri ? 7 : totalCount > 0 ? 3 : 0
+  useEffect(() => {
+    if (activeTenant) {
+      leadsService.getLeads().then(l => setLeadsCount(l.length)).catch(() => setLeadsCount(0))
+      crmService.getDeals().then(d => setProposalsCount(d.length)).catch(() => setProposalsCount(0))
+      crmService.getActivities().then(a => {
+        const sorted = [...a].sort((x, y) => new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime())
+        setActivities(sorted)
+      }).catch(() => setActivities([]))
+    }
+  }, [activeTenant])
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
@@ -198,35 +209,29 @@ export default function AdminDashboardPage() {
           </h3>
 
           <div className="space-y-4">
-            <div className="flex gap-3 text-xs leading-normal">
-              <Clock className="size-4 text-neutral-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-neutral-700 dark:text-neutral-300">
-                  Novo lead registrado por <strong>Marcos Silva</strong> para <strong>Corvette C8</strong>.
-                </p>
-                <span className="text-[10px] text-neutral-400">Há 10 min</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3 text-xs leading-normal">
-              <Clock className="size-4 text-neutral-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-neutral-700 dark:text-neutral-300">
-                  Proposta de compra recebida no valor de <strong>R$ 1.150.000</strong>.
-                </p>
-                <span className="text-[10px] text-neutral-400">Há 1 hora</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3 text-xs leading-normal">
-              <Clock className="size-4 text-neutral-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-neutral-700 dark:text-neutral-300">
-                  Ficha técnica do veículo <strong>Camaro SS</strong> atualizada.
-                </p>
-                <span className="text-[10px] text-neutral-400">Há 5 horas</span>
-              </div>
-            </div>
+            {activities.length === 0 ? (
+              <p className="text-sm text-neutral-500 py-6 text-center">Nenhuma atividade recente.</p>
+            ) : (
+              activities.slice(0, 5).map((activity) => (
+                <div key={activity.id} className="flex gap-3 text-xs leading-normal">
+                  <Clock className="size-4 text-neutral-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-neutral-700 dark:text-neutral-300">
+                      <strong>{activity.title}</strong>
+                      {activity.description && ` - ${activity.description}`}
+                    </p>
+                    <span className="text-[10px] text-neutral-400">
+                      {new Date(activity.createdAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
