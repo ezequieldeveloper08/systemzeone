@@ -802,7 +802,7 @@ ${historyContext}
       }
 
       // 6. Resolve base API URL (production APP_URL or localhost fallback)
-      const apiBaseUrl = process.env.APP_URL;
+      const apiBaseUrl = process.env.APP_URL || 'https://apicrm.zeone.com.br';
       this.logger.log(`APP_URL: ${apiBaseUrl}`);
 
       const fileUrl = `${apiBaseUrl}/uploads/${filename}`;
