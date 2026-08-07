@@ -79,7 +79,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading || !user || !activeTenant?.id) return
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
     const eventSource = new EventSource(`${API_BASE_URL}/realtime/sse?tenantId=${activeTenant.id}`)
 
     eventSource.addEventListener("order-created", (event: MessageEvent) => {

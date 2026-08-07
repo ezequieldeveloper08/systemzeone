@@ -106,7 +106,7 @@ interface CartItem {
   notes?: string
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 // High-quality unsplash fallbacks to ensure premium visuals
 const HERO_FALLBACK = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1600&auto=format&fit=crop&q=80"
@@ -190,7 +190,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
         if (menuRes.ok) {
           const menuData = await menuRes.json()
           setMenuItems(menuData)
-          
+
           // Set initial active category if items exist
           if (menuData.length > 0) {
             const firstCat = menuData[0].categoryItem?.name || menuData[0].category || "Geral"
@@ -211,7 +211,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 180 // offset for sticky components
-      
+
       let currentActive = activeCategory
       for (const catName in categoryRefs.current) {
         const element = categoryRefs.current[catName]
@@ -224,7 +224,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
           }
         }
       }
-      
+
       if (currentActive !== activeCategory && currentActive !== "") {
         setActiveCategory(currentActive)
         // Scroll the category tab bar to keep the active one visible
@@ -421,7 +421,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
     if (!selectedItem || !modalVariation) return
 
     const cartId = `${selectedItem.id}-${modalVariation.id}-${JSON.stringify(modalSelectedChoices)}-${modalNotes}`
-    
+
     // Check if exactly same item with same options already exists in cart
     const existingIndex = cart.findIndex((i) => i.cartId === cartId)
 
@@ -733,11 +733,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                 {tenant.name}
               </h1>
               <span
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-                  isStoreOpen()
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${isStoreOpen()
                     ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
                     : "bg-red-50 text-red-700 border border-red-100"
-                }`}
+                  }`}
               >
                 <span className={`size-1.5 rounded-full ${isStoreOpen() ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
                 {isStoreOpen() ? "Aberto" : "Fechado"}
@@ -786,11 +785,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                 key={categoryName}
                 id={`tab-${categoryName}`}
                 onClick={() => scrollToCategory(categoryName)}
-                className={`px-4.5 py-1.5 rounded-full text-sm font-bold tracking-tight transition-all whitespace-nowrap ${
-                  activeCategory === categoryName
+                className={`px-4.5 py-1.5 rounded-full text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeCategory === categoryName
                     ? "bg-lime-600 text-white shadow-sm shadow-lime-600/25"
                     : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
-                }`}
+                  }`}
               >
                 {categoryName}
               </button>
@@ -802,7 +800,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
       {/* 5. MAIN CONTENT LAYOUT (SPLIT PANEL) */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* LEFT: Menu listing (8 cols) */}
           <section className="lg:col-span-8 space-y-12">
             {Object.keys(filteredGroupedItems).length === 0 ? (
@@ -927,7 +925,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                             <span className="block text-neutral-400 font-bold text-[10px] uppercase mt-0.5">
                               {cartItem.selectedVariation.name}
                             </span>
-                            
+
                             {cartItem.selectedChoices.length > 0 && (
                               <div className="text-[10px] text-neutral-500 space-y-0.5 mt-1">
                                 {cartItem.selectedChoices.map((choice) => (
@@ -950,7 +948,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                             <span className="font-extrabold text-neutral-800 text-xs whitespace-nowrap">
                               {formatPrice(itemUnitTotal * cartItem.quantity)}
                             </span>
-                            
+
                             <div className="relative size-12 rounded-lg overflow-hidden bg-neutral-50 border border-neutral-100">
                               <img
                                 src={cartItem.item.image || getFallbackItemImage(cartItem.item.name)}
@@ -1030,7 +1028,7 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                     <span>Subtotal</span>
                     <span>{formatPrice(calculateCartSubtotal())}</span>
                   </div>
-                  
+
                   {activeCoupon && (
                     <div className="flex justify-between text-emerald-600 font-bold">
                       <span>Desconto ({activeCoupon.code})</span>
@@ -1143,11 +1141,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                       .map((v) => (
                         <label
                           key={v.id}
-                          className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                            modalVariation?.id === v.id
+                          className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${modalVariation?.id === v.id
                               ? "border-lime-600 bg-lime-50/20 text-lime-900"
                               : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50/50"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <input
@@ -1198,11 +1195,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                         return (
                           <label
                             key={ci.id}
-                            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${
-                              isItemSelected
+                            className={`flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none ${isItemSelected
                                 ? "border-lime-600 bg-lime-50/20 text-lime-900"
                                 : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50/50"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-3">
                               <input
@@ -1513,11 +1509,10 @@ export default function RestaurantPage({ params }: { params: Promise<{ slug: str
                       key={option.id}
                       type="button"
                       onClick={() => setDeliveryType(option.id as any)}
-                      className={`h-11 rounded-xl text-xs font-bold border transition-all ${
-                        deliveryType === option.id
+                      className={`h-11 rounded-xl text-xs font-bold border transition-all ${deliveryType === option.id
                           ? "border-lime-600 bg-lime-50 text-lime-700 font-extrabold"
                           : "border-neutral-200 hover:border-neutral-300 text-neutral-600"
-                      }`}
+                        }`}
                     >
                       {option.label}
                     </button>

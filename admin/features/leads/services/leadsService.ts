@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 const getSessionHeaders = (): Record<string, string> => {
   if (typeof window === "undefined") return {}
@@ -48,7 +48,7 @@ export const leadsService = {
     const params = new URLSearchParams()
     if (filters?.status) params.append("status", filters.status)
     if (filters?.source) params.append("source", filters.source)
-    
+
     const queryString = params.toString()
     if (queryString) {
       url += `?${queryString}`

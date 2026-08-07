@@ -1,6 +1,6 @@
 import { OrderHistoryFilters, OrderHistoryResponse } from "../types"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 const getSessionHeaders = (): Record<string, string> => {
   if (typeof window === "undefined") return {}
@@ -26,7 +26,7 @@ export const orderHistoryService = {
     if (!headers["Authorization"]) {
       throw new Error("No authentication token found")
     }
-    
+
     // Build query params
     const params = new URLSearchParams()
     if (filters.page) params.append("page", filters.page.toString())

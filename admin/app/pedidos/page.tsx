@@ -20,7 +20,7 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 interface LocalOrder {
   id: string
@@ -131,7 +131,7 @@ export default function PedidosPage() {
     activeOrderIds.forEach((orderId) => {
       try {
         const eventSource = new EventSource(`${API_BASE_URL}/realtime/sse?orderId=${orderId}`)
-        
+
         eventSource.addEventListener("order-status-changed", (event: MessageEvent) => {
           try {
             const updatedOrder = JSON.parse(event.data) as ApiOrder
@@ -139,7 +139,7 @@ export default function PedidosPage() {
               ...prev,
               [orderId]: updatedOrder,
             }))
-            
+
             // Also update selectedOrder if it is this one
             setSelectedOrder((prev) => {
               if (prev && prev.id === orderId) {
@@ -147,7 +147,7 @@ export default function PedidosPage() {
               }
               return prev
             })
-            
+
             // Synthesize notification chime for customer
             try {
               const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
@@ -164,12 +164,12 @@ export default function PedidosPage() {
                 osc.start(ctx.currentTime)
                 osc.stop(ctx.currentTime + 0.4)
               }
-            } catch (e) {}
+            } catch (e) { }
           } catch (e) {
             console.error("Erro ao processar status alterado via SSE:", e)
           }
         })
-        
+
         eventSources.push(eventSource)
       } catch (err) {
         console.error(`Erro ao conectar SSE para o pedido ${orderId}:`, err)
@@ -424,10 +424,10 @@ export default function PedidosPage() {
                       <div key={step.status} className="flex flex-col items-center z-10 text-center gap-1.5 relative">
                         <div
                           className={`size-9 rounded-full flex items-center justify-center transition-all border ${isActive
-                              ? "bg-lime-600 border-lime-600 text-white shadow-md shadow-lime-600/30 scale-110"
-                              : isDone
-                                ? "bg-lime-500 border-lime-500 text-white"
-                                : "bg-white border-neutral-200 text-neutral-400"
+                            ? "bg-lime-600 border-lime-600 text-white shadow-md shadow-lime-600/30 scale-110"
+                            : isDone
+                              ? "bg-lime-500 border-lime-500 text-white"
+                              : "bg-white border-neutral-200 text-neutral-400"
                             }`}
                         >
                           {step.icon}

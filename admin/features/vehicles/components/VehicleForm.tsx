@@ -110,7 +110,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
         const sessionStr = localStorage.getItem("veiculos_admin_session")
         if (!sessionStr) return
         const session = JSON.parse(sessionStr)
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/fipe/brands?type=${type}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fipe/brands?type=${type}`, {
           headers: {
             "Authorization": `Bearer ${session.token}`,
           }
@@ -145,7 +145,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
       const sessionStr = localStorage.getItem("veiculos_admin_session")
       if (!sessionStr) return
       const session = JSON.parse(sessionStr)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/fipe/models?brandId=${brandId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fipe/models?brandId=${brandId}`, {
         headers: {
           "Authorization": `Bearer ${session.token}`,
         }
@@ -170,7 +170,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
       const sessionStr = localStorage.getItem("veiculos_admin_session")
       if (!sessionStr) return
       const session = JSON.parse(sessionStr)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/fipe/prices?modelId=${modelId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fipe/prices?modelId=${modelId}`, {
         headers: {
           "Authorization": `Bearer ${session.token}`,
         }
@@ -247,7 +247,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
         setColor(vehicle.color)
         setTags(vehicle.tags)
         setCollections(vehicle.collections)
-        
+
         // Webmotors extra details
         setType(vehicle.type || "car")
         setPlate(vehicle.plate || "")
@@ -283,7 +283,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
 
     setIsSubmitting(true)
     setError(null)
-    
+
     try {
       const uploadedUrls: string[] = []
       for (let i = 0; i < files.length; i++) {
@@ -880,7 +880,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
             <h3 className="text-sm font-bold uppercase tracking-wider text-neutral-400">
               Ficha Técnica (Padrão Webmotors)
             </h3>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -895,7 +895,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
                     <option value="truck">🚛 Caminhão</option>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-1.5">
                   <Label htmlFor="doors">Portas (opcional)</Label>
                   <Input
@@ -918,7 +918,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
                     onChange={(e) => setEngine(e.target.value)}
                   />
                 </div>
-                
+
                 <div className="space-y-1.5">
                   <Label htmlFor="bodyType">Carroceria / Estilo</Label>
                   <Input
