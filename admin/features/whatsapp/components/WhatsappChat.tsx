@@ -266,7 +266,7 @@ export function WhatsappChat() {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/ogg; codecs=opus" })
         audioBlobRef.current = audioBlob
-        
+
         cleanupAudioNodes()
 
         if (sendImmediatelyRef.current) {
@@ -277,7 +277,7 @@ export function WhatsappChat() {
           setPreviewUrl(url)
           setRecordingState('preview')
         }
-        
+
         stream.getTracks().forEach((track) => track.stop())
       }
 
@@ -289,7 +289,7 @@ export function WhatsappChat() {
         analyser.fftSize = 64
         const bufferLength = analyser.frequencyBinCount
         const dataArray = new Uint8Array(bufferLength)
-        
+
         const source = audioContext.createMediaStreamSource(stream)
         source.connect(analyser)
 
@@ -475,7 +475,7 @@ export function WhatsappChat() {
       const barWidth = 2
       const barGap = 2
       const barCount = Math.floor(width / (barWidth + barGap))
-      
+
       ctx.fillStyle = "#10b981" // Emerald
 
       for (let i = 0; i < barCount; i++) {
@@ -488,7 +488,7 @@ export function WhatsappChat() {
 
         ctx.beginPath()
         if ((ctx as any).roundRect) {
-          ;(ctx as any).roundRect(x, y, barWidth, barHeight, 1)
+          ; (ctx as any).roundRect(x, y, barWidth, barHeight, 1)
         } else {
           ctx.rect(x, y, barWidth, barHeight)
         }
@@ -708,13 +708,13 @@ export function WhatsappChat() {
   useEffect(() => {
     if (!activeTenant?.id) return
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
     const eventSource = new EventSource(`${API_BASE_URL}/realtime/sse?tenantId=${activeTenant.id}`)
 
     eventSource.addEventListener("whatsapp-message", (event: MessageEvent) => {
       try {
         const msg = JSON.parse(event.data)
-        
+
         // 1. Silent loadChats to update last message/unread count on contacts sidebar
         loadChats(true)
 
@@ -722,7 +722,7 @@ export function WhatsappChat() {
         if (selectedChatPhone) {
           const cleanMsgPhone = msg.recipientPhone.replace(/\D/g, "")
           const cleanSelectedPhone = selectedChatPhone.replace(/\D/g, "")
-          
+
           if (cleanMsgPhone === cleanSelectedPhone) {
             const newMsg: ChatMessage = {
               id: msg.id,
@@ -734,7 +734,7 @@ export function WhatsappChat() {
               variables: msg.variables,
               errorMessage: msg.errorMessage,
             }
-            
+
             setActiveChatMessages((prev) => {
               if (prev.some((m) => m.id === newMsg.id)) return prev
               return [...prev, newMsg]
@@ -974,7 +974,7 @@ export function WhatsappChat() {
     if (!confirm("Tem certeza que deseja apagar esta mensagem para todos os participantes?")) return
     try {
       await whatsappService.revokeMessage(messageId)
-      
+
       // Update local state immediately
       setActiveChatMessages(prev => prev.map(m => {
         if (m.id === messageId) {
@@ -1583,15 +1583,14 @@ export function WhatsappChat() {
               const isDeleted = m.variables?.isDeleted === "true"
               return (
                 <div key={m.id} className={`flex ${isLead ? "justify-start" : "justify-end"} animate-in fade-in slide-in-from-bottom-2 duration-150`}>
-                  <div className={`relative group max-w-[70%] rounded-xl px-4 py-2.5 shadow-3xs ${
-                    isDeleted
-                      ? "bg-neutral-100 text-neutral-500 border border-neutral-200 dark:bg-neutral-900/50 dark:text-neutral-400 dark:border-neutral-800/80"
-                      : m.status === "failed"
-                        ? "bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/55 dark:text-rose-200"
-                        : isLead
-                          ? "bg-white text-neutral-800 border border-neutral-200/50 dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-800"
-                          : "bg-emerald-500 text-neutral-950 dark:bg-emerald-500"
-                  }`}>
+                  <div className={`relative group max-w-[70%] rounded-xl px-4 py-2.5 shadow-3xs ${isDeleted
+                    ? "bg-neutral-100 text-neutral-500 border border-neutral-200 dark:bg-neutral-900/50 dark:text-neutral-400 dark:border-neutral-800/80"
+                    : m.status === "failed"
+                      ? "bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/20 dark:border-rose-900/55 dark:text-rose-200"
+                      : isLead
+                        ? "bg-white text-neutral-800 border border-neutral-200/50 dark:bg-neutral-900 dark:text-neutral-100 dark:border-neutral-800"
+                        : "bg-emerald-500 text-neutral-950 dark:bg-emerald-500"
+                    }`}>
                     {/* Trash/Revoke Button for outbound messages */}
                     {!isLead && !isDeleted && (
                       <button
