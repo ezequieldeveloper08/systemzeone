@@ -689,12 +689,20 @@ ${historyContext}
 
       this.logger.log(`Resposta da IA gerada com sucesso para ${fromPhone}: "${aiReply.substring(0, 50)}..."`);
 
+      let channel: 'whatsapp' | 'instagram' | 'facebook' = 'whatsapp';
+      if (fromPhone.startsWith('ig_')) {
+        channel = 'instagram';
+      } else if (fromPhone.startsWith('fb_')) {
+        channel = 'facebook';
+      }
+
       // 4. Send the message back via SendFreeTextMessageUseCase
       await this.sendFreeTextMessageUseCase.execute(tenantId, {
         recipientPhone: fromPhone,
         recipientName: senderName,
         bodyText: aiReply,
         isAi: true,
+        channel,
       });
 
     } catch (err) {
