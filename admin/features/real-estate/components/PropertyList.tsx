@@ -11,51 +11,42 @@ import {
   BedDouble,
   Bath,
   Maximize2,
-  DollarSign,
   Building,
-  Tag
+  Tag,
+  Pencil,
+  Trash2,
+  EyeOff
 } from "lucide-react"
+import Link from "next/link"
 
 export function PropertyList() {
-  const { properties, loading, search, setSearch, createProperty } = useProperties()
-  const [showAddForm, setShowAddForm] = useState(false)
+  const { properties, loading, search, setSearch, deleteProperty } = useProperties()
 
-  // Form states
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [type, setType] = useState("apartamento")
-  const [price, setPrice] = useState("")
-  const [bedrooms, setBedrooms] = useState("")
-  const [bathrooms, setBathrooms] = useState("")
-  const [area, setArea] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      await createProperty({
-        title,
-        description,
-        type,
-        price: Number(price),
-        bedrooms: Number(bedrooms),
-        bathrooms: Number(bathrooms),
-        area: Number(area),
-        status: "published",
-        images: imageUrl ? [imageUrl] : ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=80"]
-      })
-      // Clear form
-      setTitle("")
-      setDescription("")
-      setPrice("")
-      setBedrooms("")
-      setBathrooms("")
-      setArea("")
-      setImageUrl("")
-      setShowAddForm(false)
-    } catch (err) {
-      alert("Erro ao cadastrar imóvel")
+  const handleDelete = async (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este imóvel permanentemente?")) {
+      try {
+        await deleteProperty(id)
+      } catch (err: any) {
+        alert(err.message || "Erro ao excluir imóvel")
+      }
     }
+  }
+
+  // Translate property type key for display
+  const getTypeLabel = (type: string) => {
+    const map: Record<string, string> = {
+      apartment: "Apartamento",
+      house: "Casa",
+      condo_house: "Casa Condomínio",
+      studio: "Studio",
+      kitnet: "Kitnet",
+      loft: "Loft",
+      penthouse: "Cobertura",
+      commercial: "Comercial",
+      land: "Terreno",
+      farm: "Chácara / Sítio",
+    }
+    return map[type] || type
   }
 
   return (
@@ -72,76 +63,15 @@ export function PropertyList() {
           </p>
         </div>
         <Button
-          onClick={() => setShowAddForm(!showAddForm)}
+          asChild
           className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 flex items-center gap-2"
         >
-          <Plus className="size-4" />
-          {showAddForm ? "Fechar Formulário" : "Cadastrar Imóvel"}
+          <Link href="/admin/real-estate/new">
+            <Plus className="size-4" />
+            Cadastrar Imóvel
+          </Link>
         </Button>
       </div>
-
-      {/* ADD PROPERTY FORM */}
-      {showAddForm && (
-        <form onSubmit={handleSubmit} className="p-6 rounded-2xl border border-neutral-200 bg-white/60 dark:border-neutral-800 dark:bg-neutral-900/60 shadow-md backdrop-blur-md space-y-4 animate-in fade-in slide-in-from-top-4 duration-200">
-          <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Novo Imóvel</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-400 uppercase">Título</label>
-              <Input placeholder="Ex: Casa Duplex Alphaville" value={title} onChange={(e) => setTitle(e.target.value)} required />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-400 uppercase">Tipo</label>
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full h-10 px-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
-                >
-                  <option value="apartamento">Apartamento</option>
-                  <option value="casa">Casa</option>
-                  <option value="cobertura">Cobertura</option>
-                  <option value="terreno">Terreno</option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-400 uppercase">Preço (R$)</label>
-                <Input type="number" placeholder="Ex: 850000" value={price} onChange={(e) => setPrice(e.target.value)} required />
-              </div>
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-semibold text-neutral-400 uppercase">Descrição</label>
-              <textarea
-                placeholder="Detalhes sobre quartos, acabamento, condomínio..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full min-h-20 p-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-400 uppercase">Quartos</label>
-                <Input type="number" placeholder="Ex: 3" value={bedrooms} onChange={(e) => setBedrooms(e.target.value)} required />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-400 uppercase">Banheiros</label>
-                <Input type="number" placeholder="Ex: 2" value={bathrooms} onChange={(e) => setBathrooms(e.target.value)} required />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-400 uppercase">Área (m²)</label>
-                <Input type="number" placeholder="Ex: 120" value={area} onChange={(e) => setArea(e.target.value)} required />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-400 uppercase">URL da Imagem</label>
-              <Input placeholder="Ex: https://images.unsplash.com/..." value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-            </div>
-          </div>
-          <div className="flex justify-end pt-2">
-            <Button type="submit" className="bg-neutral-950 text-white dark:bg-white dark:text-neutral-950">Cadastrar</Button>
-          </div>
-        </form>
-      )}
 
       {/* SEARCH AND FILTERS */}
       <div className="relative">
@@ -169,63 +99,129 @@ export function PropertyList() {
       ) : (
         /* PROPERTIES GRID */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties.map((property) => (
-            <div
-              key={property.id}
-              className="group overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-xs transition-all hover:shadow-md dark:border-neutral-800/80 dark:bg-neutral-950"
-            >
-              {/* IMAGE HEADER */}
-              <div className="relative h-48 w-full bg-neutral-100 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={property.images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=80"}
-                  alt={property.title}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute top-3 left-3 bg-neutral-900/80 backdrop-blur-xs text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Tag className="size-3" />
-                  {property.type}
-                </div>
-              </div>
+          {properties.map((property) => {
+            // Defensive fallbacks for old vs new schema properties
+            const bedroomsCount = property.rooms?.bedrooms ?? (property as any).bedrooms ?? 0
+            const bathroomsCount = property.rooms?.bathrooms ?? (property as any).bathrooms ?? 0
+            const totalAreaSize = property.area?.total ?? property.area?.usable ?? (property as any).area ?? 0
+            const salePriceVal = property.pricing?.salePrice ?? property.pricing?.rentPrice ?? (property as any).price ?? 0
+            const rentPriceVal = property.pricing?.rentPrice ?? null
+            
+            const coverImageSrc = property.media?.cover ?? 
+                                  property.media?.images?.[0]?.url ?? 
+                                  ((property as any).images && (property as any).images[0]) ?? 
+                                  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=80"
 
-              {/* CARD CONTENT */}
-              <div className="p-5 space-y-4">
+            const isDraft = property.status === "draft"
+            const isInactive = property.status === "inactive"
+
+            return (
+              <div
+                key={property.id}
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-xs transition-all hover:shadow-md dark:border-neutral-800/80 dark:bg-neutral-950"
+              >
                 <div>
-                  <h3 className="font-bold text-lg text-neutral-900 dark:text-neutral-50 truncate">
-                    {property.title}
-                  </h3>
-                  <p className="text-xs text-neutral-400 line-clamp-2 mt-1">
-                    {property.description}
-                  </p>
+                  {/* IMAGE HEADER */}
+                  <div className="relative h-48 w-full bg-neutral-100 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={coverImageSrc}
+                      alt={property.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute top-3 left-3 bg-neutral-900/80 backdrop-blur-xs text-white text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Tag className="size-3" />
+                      {getTypeLabel(property.type)}
+                    </div>
+
+                    {(isDraft || isInactive) && (
+                      <div className="absolute top-3 right-3 bg-yellow-500/90 text-neutral-950 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-xs">
+                        <EyeOff className="size-3" />
+                        {isDraft ? "Rascunho" : "Inativo"}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* CARD CONTENT */}
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-50 truncate" title={property.title}>
+                        {property.title}
+                      </h3>
+                      {property.address?.city && property.address?.state && (
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          {property.address.neighborhood}, {property.address.city} - {property.address.state}
+                        </p>
+                      )}
+                      <p className="text-xs text-neutral-500 line-clamp-2 mt-2">
+                        {property.description}
+                      </p>
+                    </div>
+
+                    {/* ICON METRICS */}
+                    <div className="grid grid-cols-3 gap-2 border-y border-neutral-100 py-3 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
+                      <div className="flex items-center gap-1.5 justify-center">
+                        <BedDouble className="size-4 shrink-0 text-neutral-400" />
+                        <span>{bedroomsCount} Qts</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 justify-center">
+                        <Bath className="size-4 shrink-0 text-neutral-400" />
+                        <span>{bathroomsCount} Banhs</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 justify-center">
+                        <Maximize2 className="size-4 shrink-0 text-neutral-400" />
+                        <span>{totalAreaSize} m²</span>
+                      </div>
+                    </div>
+
+                    {/* PRICE FOOTER */}
+                    <div className="flex flex-col gap-0.5 pt-1">
+                      {property.purpose === "rent" ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-neutral-400 uppercase">Aluguel</span>
+                          <span className="text-base font-extrabold text-neutral-950 dark:text-neutral-50 flex items-center">
+                            <span className="text-xs font-semibold mr-0.5">R$</span>
+                            {rentPriceVal ? rentPriceVal.toLocaleString("pt-BR") : salePriceVal.toLocaleString("pt-BR")}/mês
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-neutral-400 uppercase">Preço Venda</span>
+                          <span className="text-base font-extrabold text-neutral-950 dark:text-neutral-50 flex items-center">
+                            <span className="text-xs font-semibold mr-0.5">R$</span>
+                            {salePriceVal.toLocaleString("pt-BR")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* ICON METRICS */}
-                <div className="grid grid-cols-3 gap-2 border-y border-neutral-100 py-3 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <BedDouble className="size-4 shrink-0 text-neutral-400" />
-                    <span>{property.bedrooms} Qts</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <Bath className="size-4 shrink-0 text-neutral-400" />
-                    <span>{property.bathrooms} Banhs</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 justify-center">
-                    <Maximize2 className="size-4 shrink-0 text-neutral-400" />
-                    <span>{property.area} m²</span>
-                  </div>
-                </div>
-
-                {/* PRICE FOOTER */}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-400 uppercase">Valor Venda</span>
-                  <span className="text-lg font-extrabold text-neutral-950 dark:text-neutral-50 flex items-center">
-                    <span className="text-sm font-semibold mr-0.5">R$</span>
-                    {property.price.toLocaleString("pt-BR")}
-                  </span>
+                {/* CARD ACTIONS */}
+                <div className="flex gap-2 p-4 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="flex-1 h-8 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  >
+                    <Link href={`/admin/real-estate/edit/${property.id}`}>
+                      <Pencil className="size-3.5" />
+                      Editar
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => handleDelete(property.id)}
+                    className="h-8 text-xs font-semibold text-red-650 hover:text-white hover:bg-red-500 rounded-lg flex items-center justify-center gap-1.5 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white"
+                  >
+                    <Trash2 className="size-3.5" />
+                    Excluir
+                  </Button>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

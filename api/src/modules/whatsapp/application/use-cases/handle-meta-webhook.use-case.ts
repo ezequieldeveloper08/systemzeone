@@ -582,12 +582,18 @@ ${historyContext}
             const args = functionCall.args || {};
             const list = await this.propertyRepository.findAll(tenantId);
             const filtered = list.filter(p => {
+              const price = p.pricing?.salePrice ?? p.pricing?.rentPrice ?? 0;
               if (args.type && !p.type.toLowerCase().includes(args.type.toLowerCase())) return false;
-              if (args.purpose && !p.status.toLowerCase().includes(args.purpose.toLowerCase())) return false;
-              if (args.priceMax && p.price > args.priceMax) return false;
+              if (args.purpose && p.purpose && !p.purpose.toLowerCase().includes(args.purpose.toLowerCase())) return false;
+              if (args.priceMax && price > args.priceMax) return false;
               return true;
             });
-            functionResult = { properties: filtered.map(p => ({ title: p.title, type: p.type, price: p.price, status: p.status })) };
+            functionResult = {
+              properties: filtered.map(p => {
+                const price = p.pricing?.salePrice ?? p.pricing?.rentPrice ?? 0;
+                return { title: p.title, type: p.type, price: price, status: p.status };
+              })
+            };
           } else if (functionCall.name === 'consultarCardapio') {
             const list = await this.menuItemRepository.findAll(tenantId);
             functionResult = { menu: list.map(item => ({ name: item.name, price: (item.variations?.[0]?.price) || 0, description: item.description })) };

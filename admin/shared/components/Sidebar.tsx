@@ -156,7 +156,7 @@ export function Sidebar() {
 
   menuItems.push(
     {
-      label: "WhatsApp",
+      label: "Conversas",
       icon: MessageSquare,
       isCollapsible: true,
       isOpen: whatsappOpen,

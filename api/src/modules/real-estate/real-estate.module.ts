@@ -6,6 +6,9 @@ import { PropertyRepository } from './infrastructure/repositories/property.repos
 import { IPropertyRepositoryToken } from './domain/repositories/property.repository.interface';
 import { ListPropertiesUseCase } from './application/use-cases/list-properties.use-case';
 import { CreatePropertyUseCase } from './application/use-cases/create-property.use-case';
+import { GetPropertyUseCase } from './application/use-cases/get-property.use-case';
+import { UpdatePropertyUseCase } from './application/use-cases/update-property.use-case';
+import { DeletePropertyUseCase } from './application/use-cases/delete-property.use-case';
 import { RealEstateController } from './presentation/controllers/real-estate.controller';
 
 @Module({
@@ -20,6 +23,9 @@ import { RealEstateController } from './presentation/controllers/real-estate.con
     },
     ListPropertiesUseCase,
     CreatePropertyUseCase,
+    GetPropertyUseCase,
+    UpdatePropertyUseCase,
+    DeletePropertyUseCase,
   ],
   controllers: [RealEstateController],
   exports: [IPropertyRepositoryToken],

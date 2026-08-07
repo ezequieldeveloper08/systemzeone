@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IPropertyRepository } from '../../domain/repositories/property.repository.interface';
-import { Property } from '../../domain/entities/property.entity';
+import { Property, PropertyType, PropertyPurpose, PropertyStatus, FurnishingType } from '../../domain/entities/property.entity';
 import { PropertyOrmEntity } from '../database/property.orm-entity';
 
 @Injectable()
@@ -13,38 +13,65 @@ export class PropertyRepository implements IPropertyRepository {
   ) {}
 
   private toDomain(orm: PropertyOrmEntity): Property {
-    return new Property(
-      orm.id,
-      orm.tenantId,
-      orm.title,
-      orm.description,
-      orm.type,
-      orm.price,
-      orm.bedrooms,
-      orm.bathrooms,
-      orm.area,
-      orm.status,
-      orm.images,
-      orm.createdAt,
-      orm.updatedAt,
-    );
+    const domain = new Property();
+    domain.id = orm.id;
+    domain.tenantId = orm.tenantId;
+    domain.code = orm.code || undefined;
+    domain.title = orm.title;
+    domain.description = orm.description || undefined;
+    domain.slug = orm.slug || undefined;
+    domain.type = orm.type as PropertyType;
+    domain.purpose = orm.purpose as PropertyPurpose;
+    domain.status = orm.status as PropertyStatus;
+    domain.address = orm.address;
+    domain.area = orm.area;
+    domain.rooms = orm.rooms;
+    domain.details = orm.details ? {
+      ...orm.details,
+      furnishing: orm.details.furnishing as FurnishingType
+    } : orm.details;
+    domain.pricing = orm.pricing;
+    domain.features = orm.features;
+    domain.condominium = orm.condominium || undefined;
+    domain.rules = orm.rules || undefined;
+    domain.media = orm.media;
+    domain.commercial = orm.commercial;
+    domain.owner = orm.owner || undefined;
+    domain.realtor = orm.realtor || undefined;
+    domain.agency = orm.agency || undefined;
+    domain.seo = orm.seo || undefined;
+    domain.createdAt = orm.createdAt;
+    domain.updatedAt = orm.updatedAt;
+    return domain;
   }
 
   private toOrm(domain: Property): PropertyOrmEntity {
     const orm = new PropertyOrmEntity();
     orm.id = domain.id;
     orm.tenantId = domain.tenantId;
+    orm.code = domain.code || null;
     orm.title = domain.title;
-    orm.description = domain.description;
+    orm.description = domain.description || null;
+    orm.slug = domain.slug || null;
     orm.type = domain.type;
-    orm.price = domain.price;
-    orm.bedrooms = domain.bedrooms;
-    orm.bathrooms = domain.bathrooms;
-    orm.area = domain.area;
+    orm.purpose = domain.purpose;
     orm.status = domain.status;
-    orm.images = domain.images;
-    orm.createdAt = domain.createdAt;
-    orm.updatedAt = domain.updatedAt;
+    orm.address = domain.address;
+    orm.area = domain.area;
+    orm.rooms = domain.rooms;
+    orm.details = domain.details;
+    orm.pricing = domain.pricing;
+    orm.features = domain.features;
+    orm.condominium = domain.condominium || null;
+    orm.rules = domain.rules || null;
+    orm.media = domain.media;
+    orm.commercial = domain.commercial;
+    orm.owner = domain.owner || null;
+    orm.realtor = domain.realtor || null;
+    orm.agency = domain.agency || null;
+    orm.seo = domain.seo || null;
+    if (domain.createdAt) orm.createdAt = domain.createdAt;
+    if (domain.updatedAt) orm.updatedAt = domain.updatedAt;
     return orm;
   }
 
