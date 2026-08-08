@@ -668,6 +668,17 @@ export function WhatsappChat() {
     }
   }
 
+  const loadSettings = async () => {
+    if (!activeTenant) return
+    try {
+      const configData = await whatsappService.getConfig()
+      setAiEnabled(configData.aiEnabled || false)
+      setAiPausedPhones(configData.aiPausedPhones || [])
+    } catch (err) {
+      console.error("Erro ao obter configurações de IA:", err)
+    }
+  }
+
   // Initial load
   useEffect(() => {
     loadChats()
@@ -680,16 +691,6 @@ export function WhatsappChat() {
         setTemplates(approved)
       } catch (err) {
         console.error("Erro ao obter templates:", err)
-      }
-    }
-    const loadSettings = async () => {
-      if (!activeTenant) return
-      try {
-        const configData = await whatsappService.getConfig()
-        setAiEnabled(configData.aiEnabled || false)
-        setAiPausedPhones(configData.aiPausedPhones || [])
-      } catch (err) {
-        console.error("Erro ao obter configurações de IA:", err)
       }
     }
     loadTemplates()
@@ -718,6 +719,7 @@ export function WhatsappChat() {
 
         // 1. Silent loadChats to update last message/unread count on contacts sidebar
         loadChats(true)
+        loadSettings()
 
         // 2. Append message dynamically if it's the currently active chat
         if (selectedChatPhone) {

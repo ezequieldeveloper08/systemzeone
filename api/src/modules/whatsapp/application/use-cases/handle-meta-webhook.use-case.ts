@@ -379,9 +379,10 @@ Informações Oficiais da Empresa (Tenant):
 
 REGRAS OBRIGATÓRIAS PARA A IA:
 1. Responda APENAS com base nos dados e informações oficiais fornecidos acima ou retornados pelas ferramentas ativas.
-2. NUNCA invente informações, preços, endereços, horários ou características de produtos (como carros, pratos, imóveis) que não estejam explícitas. Responder com achismos ou inventar dados é estritamente proibido.
-3. Se o cliente perguntar sobre algo (como um produto específico) e a busca das ferramentas não retornar resultados, diga honestamente que não encontrou a informação e ofereça-se para anotar as observações do cliente e cadastrá-lo como lead para que um humano entre em contato para ajudar.
-4. Responda de forma prestativa, com mensagens curtas e objetivas adequadas para leitura rápida no WhatsApp.
+2. NUNCA invente informações, preços, endereços, horários ou características de produtos (como carros, pratos, imóveis) que não estejam explícitas. Responder com achismos ou inventar dados é estritamente proibido e inaceitável.
+3. Se o cliente perguntar sobre algo que você não sabe responder, ou se a informação não constar nos dados oficiais da empresa ou nas buscas de ferramentas, NÃO invente dados aleatórios ou suposições. Pergunte educadamente se o cliente gostaria de ser transferido para um atendente humano ou use a ferramenta 'transferirParaAtendente' imediatamente.
+4. Se o cliente solicitar explicitamente falar com um atendente, humano ou suporte, use IMEDIATAMENTE a ferramenta 'transferirParaAtendente' e avise que a transferência está ocorrendo.
+5. Responda de forma prestativa, com mensagens curtas e objetivas adequadas para leitura rápida no WhatsApp.
 
 Histórico da Conversa:
 ${historyContext}
@@ -527,6 +528,23 @@ ${historyContext}
         });
       }
 
+      // A ferramenta de transferência para atendente está sempre disponível para a segurança do atendimento
+      toolsList.push({
+        functionDeclarations: [
+          {
+            name: 'transferirParaAtendente',
+            description: 'Transfere a conversa para um atendente humano imediatamente. Use quando o cliente solicitar falar com atendente, humano, suporte, ou quando você não souber a resposta ou não encontrar a informação oficial correspondente.',
+            parameters: {
+              type: 'OBJECT',
+              properties: {
+                reason: { type: 'STRING', description: 'Motivo detalhado da transferência para o atendente humano.' },
+              },
+              required: ['reason'],
+            },
+          },
+        ],
+      });
+
       const requestBody: any = {
         contents: [
           {
@@ -642,11 +660,24 @@ ${historyContext}
               notes: args.notes,
             });
             functionResult = { status: 'success', message: 'Dados cadastrais do lead atualizados com sucesso.' };
+          } else if (functionCall.name === 'transferirParaAtendente') {
+            const args = functionCall.args || {};
+            if (!settings.aiPausedPhones) {
+              settings.aiPausedPhones = [];
+            }
+            if (!settings.aiPausedPhones.includes(fromPhone)) {
+              settings.aiPausedPhones.push(fromPhone);
+              await this.whatsappRepository.saveSettings(settings);
+            }
+            this.logger.log(`[IA Autotransfer] Conversa de ${fromPhone} transferida e IA pausada. Motivo: ${args.reason}`);
+            functionResult = { status: 'success', message: 'A conversa foi transferida para um atendente humano e a IA foi pausada com sucesso.' };
           }
         } catch (fErr) {
           this.logger.error(`Erro ao rodar ferramenta local ${functionCall.name}: ${fErr.message}`);
           functionResult = { error: fErr.message };
         }
+
+        const modelContent = resJson.candidates?.[0]?.content;
 
         this.logger.log(`Retornando resposta da ferramenta para o Gemini...`);
         const secondRes = await fetch(geminiUrl, {
@@ -660,10 +691,7 @@ ${historyContext}
                 role: 'user',
                 parts: [{ text: prompt }]
               },
-              {
-                role: 'model',
-                parts: [{ functionCall }]
-              },
+              modelContent,
               {
                 role: 'user',
                 parts: [
