@@ -32,11 +32,17 @@ import {
   Kanban,
   Calendar,
   Utensils,
-  Store
+  Store,
+  X
 } from "lucide-react"
 import Image from "next/image"
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean
+  onClose?: () => void
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, activeTenant, tenants, switchTenant, createTenant, logout } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
@@ -214,9 +220,17 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="fixed inset-y-0 left-0 z-20 flex w-72 flex-col border-r border-neutral-200 bg-neutral-50 px-4 py-4 dark:border-neutral-800 dark:bg-neutral-950">
-        {/* LOGO & TENANT SELECTOR */}
-        <Image src={theme === "dark" ? "/logo-dark-mode.svg" : "/logo-ligth-mode.svg"} alt="Logo" width={100} height={48} />
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-neutral-200 bg-neutral-50 px-4 py-4 dark:border-neutral-800 dark:bg-neutral-950 transition-transform duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* LOGO & CLOSE BUTTON */}
+        <div className="flex items-center justify-between lg:block mb-2">
+          <Image src={theme === "dark" ? "/logo-dark-mode.svg" : "/logo-ligth-mode.svg"} alt="Logo" width={100} height={48} />
+          <button
+            onClick={onClose}
+            className="lg:hidden rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-250 dark:hover:bg-neutral-800"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
         <div className="relative my-5" ref={tenantMenuRef}>
           <button
             onClick={() => setTenantDropdownOpen(!tenantDropdownOpen)}

@@ -21,11 +21,18 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([])
   const routesIgnorePadding = ["/admin/whatsapp/chat"]
 
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login")
     }
   }, [user, loading, router])
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileSidebarOpen(false)
+  }, [path])
 
   // Play Premium audio notification chime using Web Audio API (no external asset files required)
   const playChime = (type: "order" | "whatsapp") => {
@@ -149,9 +156,43 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-svh bg-neutral-50/30 dark:bg-neutral-950/10">
-      <Sidebar />
-      <div className="pl-72">
-        <main className={routesIgnorePadding.includes(path) ? "" : "px-8 py-8 animate-in fade-in duration-200"}>
+      {/* Mobile Sticky Header Bar */}
+      {activeTenant && (
+        <header className="lg:hidden h-14 border-b border-neutral-200 bg-neutral-50 px-4 flex items-center justify-between dark:border-neutral-800 dark:bg-neutral-950 sticky top-0 z-30 shadow-2xs">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="rounded-lg p-1.5 text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
+          >
+            <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 truncate max-w-[200px]">
+            {activeTenant.name}
+          </span>
+          <div className="size-8 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden flex items-center justify-center font-bold text-xs text-neutral-600 dark:text-neutral-300">
+            {user?.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.avatar} alt="Avatar" className="size-full object-cover" />
+            ) : (
+              user?.name?.charAt(0) || "U"
+            )}
+          </div>
+        </header>
+      )}
+
+      <Sidebar isOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
+
+      {/* Backdrop overlay for mobile sidebar */}
+      {mobileSidebarOpen && (
+        <div
+          onClick={() => setMobileSidebarOpen(false)}
+          className="lg:hidden fixed inset-0 bg-neutral-950/40 backdrop-blur-xs z-30 animate-in fade-in duration-200"
+        />
+      )}
+
+      <div className="lg:pl-72 pl-0">
+        <main className={routesIgnorePadding.includes(path) ? "" : "px-4 py-6 sm:px-8 sm:py-8 animate-in fade-in duration-200"}>
           {children}
         </main>
       </div>

@@ -50,7 +50,7 @@ export function PropertyList() {
   }
 
   return (
-    <div className="space-y-8 p-6 max-w-7xl mx-auto">
+    <div className="space-y-8 py-6 mx-auto">
       {/* HEADER */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -98,21 +98,21 @@ export function PropertyList() {
         </div>
       ) : (
         /* PROPERTIES GRID */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {properties.map((property) => {
             // Defensive fallbacks for old vs new schema properties
             const bedroomsCount = property.rooms?.bedrooms ?? (property as any).bedrooms ?? 0
             const bathroomsCount = property.rooms?.bathrooms ?? (property as any).bathrooms ?? 0
-            const totalAreaSize = property.area?.total ?? 
-                                  property.area?.usable ?? 
-                                  (typeof (property as any).area === "number" ? (property as any).area : 0)
+            const totalAreaSize = property.area?.total ??
+              property.area?.usable ??
+              (typeof (property as any).area === "number" ? (property as any).area : 0)
             const salePriceVal = property.pricing?.salePrice ?? property.pricing?.rentPrice ?? (property as any).price ?? 0
             const rentPriceVal = property.pricing?.rentPrice ?? null
-            
-            const coverImageSrc = property.media?.cover ?? 
-                                  property.media?.images?.[0]?.url ?? 
-                                  ((property as any).images && (property as any).images[0]) ?? 
-                                  null
+
+            const coverImageSrc = property.media?.cover ??
+              property.media?.images?.[0]?.url ??
+              ((property as any).images && (property as any).images[0]) ??
+              null
 
             const isDraft = property.status === "draft"
             const isInactive = property.status === "inactive"

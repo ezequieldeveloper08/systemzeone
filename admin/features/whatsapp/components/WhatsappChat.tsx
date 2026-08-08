@@ -34,7 +34,8 @@ import {
   Trash2,
   Pause,
   Play,
-  Brain
+  Brain,
+  ChevronLeft
 } from "lucide-react"
 
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -1302,10 +1303,10 @@ export function WhatsappChat() {
   }
 
   return (
-    <div className="h-screen overflow-hidden flex bg-white dark:border-neutral-800 dark:bg-neutral-950 shadow-sm animate-in fade-in duration-200">
+    <div className="w-full h-[calc(100vh-3.5rem)] lg:h-screen overflow-hidden flex bg-white dark:border-neutral-800 dark:bg-neutral-950 shadow-sm animate-in fade-in duration-200">
 
       {/* COLUMN 1: CONVERSATIONS LIST (320px) */}
-      <div className="w-80 border-r border-neutral-200 flex flex-col dark:border-neutral-800 shrink-0">
+      <div className={`w-full lg:w-80 border-r border-neutral-200 lg:flex flex-col dark:border-neutral-800 shrink-0 ${activeChat ? 'hidden lg:flex' : 'flex'}`}>
 
         {/* Search */}
         <div className="p-4 border-b border-neutral-100 dark:border-neutral-800/60">
@@ -1415,40 +1416,46 @@ export function WhatsappChat() {
 
       {/* COLUMN 2: ACTIVE CHAT SCREEN */}
       {activeChat ? (
-        <div className="flex-1 flex flex-col bg-neutral-50/20 dark:bg-neutral-900/5">
+        <div className={`flex-1 lg:flex flex-col bg-neutral-50/20 dark:bg-neutral-900/5 ${activeChat ? 'flex' : 'hidden lg:flex'}`}>
 
           {/* Header */}
-          <div className="h-16 px-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-neutral-950">
-            <div className="flex items-center gap-3">
-              <div className="size-9 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-neutral-700 dark:text-neutral-300">
+          <div className="h-16 px-3 sm:px-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-white dark:bg-neutral-950">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <button
+                onClick={() => setSelectedChatPhone("")}
+                className="lg:hidden rounded-lg p-1 text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 mr-0.5 shrink-0"
+              >
+                <ChevronLeft className="size-5" />
+              </button>
+              <div className="size-8 sm:size-9 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-neutral-700 dark:text-neutral-300 shrink-0">
                 {activeChat.avatarInitials}
               </div>
-              <div className="leading-tight">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-sm text-neutral-800 dark:text-neutral-200">{activeChat.name}</h3>
+              <div className="leading-tight min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-xs sm:text-sm text-neutral-800 dark:text-neutral-200 truncate">{activeChat.name}</h3>
                   {activeChat.channel === 'instagram' ? (
-                    <InstagramIcon className="size-4 text-pink-500 shrink-0" />
+                    <InstagramIcon className="size-3.5 text-pink-500 shrink-0" />
                   ) : activeChat.channel === 'facebook' ? (
-                    <FacebookIcon className="size-4 text-blue-600 shrink-0" />
+                    <FacebookIcon className="size-3.5 text-blue-600 shrink-0" />
                   ) : null}
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-neutral-500 dark:text-neutral-400">
-                  <span className="text-emerald-500 font-semibold flex items-center gap-1">
-                    <span className="size-1.5 rounded-full bg-emerald-500 animate-ping" />
-                    online (oficial)
+                <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 text-[9px] sm:text-[10px] text-neutral-500 dark:text-neutral-400">
+                  <span className="text-emerald-500 font-semibold flex items-center gap-1 shrink-0">
+                    <span className="size-1 rounded-full bg-emerald-500 animate-ping" />
+                    online
                   </span>
                   {aiEnabled && (
                     <>
-                      <span className="text-neutral-300 dark:text-neutral-700">•</span>
+                      <span className="text-neutral-300 dark:text-neutral-700 shrink-0">•</span>
                       {aiPausedPhones.includes(activeChat.phone) ? (
-                        <span className="font-semibold text-neutral-500 dark:text-neutral-450 flex items-center gap-0.5">
-                          <Brain className="size-3 text-neutral-400" />
+                        <span className="font-semibold text-neutral-500 dark:text-neutral-450 flex items-center gap-0.5 shrink-0">
+                          <Brain className="size-2.5 text-neutral-400" />
                           IA Pausada
                         </span>
                       ) : (
-                        <span className="font-semibold text-violet-600 dark:text-violet-400 flex items-center gap-0.5 animate-in fade-in duration-200">
-                          <Brain className="size-3 animate-pulse text-violet-500 dark:text-violet-400" />
-                          IA Respondendo
+                        <span className="font-semibold text-violet-650 dark:text-violet-400 flex items-center gap-0.5 animate-in fade-in duration-200 shrink-0">
+                          <Brain className="size-2.5 animate-pulse text-violet-500 dark:text-violet-450" />
+                          IA Ativa
                         </span>
                       )}
                     </>
@@ -1457,34 +1464,37 @@ export function WhatsappChat() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               {aiEnabled ? (
                 activeChat.responsible !== "Você" ? (
                   <Button
                     onClick={aiPausedPhones.includes(activeChat.phone) ? handleAssignToMe : handlePauseAi}
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900 text-neutral-700 hover:text-neutral-900 dark:text-neutral-350 dark:hover:text-white"
+                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900 text-neutral-700 hover:text-neutral-900 dark:text-neutral-350 dark:hover:text-white px-2 sm:px-3"
                   >
-                    <UserCheck className="size-3.5" /> Assumir
+                    <UserCheck className="size-3.5" />
+                    <span className="hidden sm:inline">Assumir</span>
                   </Button>
                 ) : aiPausedPhones.includes(activeChat.phone) ? (
                   <Button
                     onClick={handleResumeAi}
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900 text-violet-650 hover:text-violet-750 hover:bg-violet-50/50 dark:text-violet-450 dark:hover:text-violet-350 dark:hover:bg-violet-950/20 border-violet-200 dark:border-violet-900/30"
+                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900 text-violet-650 hover:text-violet-750 hover:bg-violet-50/50 dark:text-violet-450 dark:hover:text-violet-350 dark:hover:bg-violet-950/20 border-violet-200 dark:border-violet-900/30 px-2 sm:px-3"
                   >
-                    <Play className="size-3.5" /> Devolver para IA
+                    <Play className="size-3.5" />
+                    <span className="hidden sm:inline">Devolver para IA</span>
                   </Button>
                 ) : (
                   <Button
                     onClick={handlePauseAi}
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900 text-amber-650 hover:text-amber-750 hover:bg-amber-50/50 dark:text-amber-450 dark:hover:text-amber-350 dark:hover:bg-amber-950/20 border-amber-200 dark:border-amber-900/30"
+                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900 text-amber-650 hover:text-amber-750 hover:bg-amber-50/50 dark:text-amber-450 dark:hover:text-amber-350 dark:hover:bg-amber-950/20 border-amber-200 dark:border-amber-900/30 px-2 sm:px-3"
                   >
-                    <Pause className="size-3.5" /> Pausar IA
+                    <Pause className="size-3.5" />
+                    <span className="hidden sm:inline">Pausar IA</span>
                   </Button>
                 )
               ) : (
@@ -1493,13 +1503,15 @@ export function WhatsappChat() {
                     onClick={handleAssignToMe}
                     variant="outline"
                     size="sm"
-                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900"
+                    className="h-8 text-xs font-semibold gap-1 dark:bg-neutral-900 px-2 sm:px-3"
                   >
-                    <UserCheck className="size-3.5" /> Assumir
+                    <UserCheck className="size-3.5" />
+                    <span className="hidden sm:inline">Assumir</span>
                   </Button>
                 ) : (
-                  <span className="text-[11px] font-semibold text-neutral-400 mr-2 bg-neutral-100 px-2 py-0.5 rounded dark:bg-neutral-800 dark:text-neutral-300">
-                    Atribuído a você
+                  <span className="text-[11px] font-semibold text-neutral-400 mr-1.5 bg-neutral-100 px-2 py-0.5 rounded dark:bg-neutral-800 dark:text-neutral-300 flex items-center gap-1">
+                    <UserCheck className="size-3 text-neutral-500" />
+                    <span className="hidden sm:inline">Atribuído a você</span>
                   </span>
                 )
               )}
@@ -2159,7 +2171,7 @@ export function WhatsappChat() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 text-sm">
+        <div className="hidden lg:flex flex-1 flex flex-col items-center justify-center text-neutral-400 text-sm">
           <MessageSquare className="size-10 text-neutral-300 dark:text-neutral-700 animate-pulse mb-3" />
           Selecione uma conversa para iniciar o atendimento ao vivo.
         </div>
@@ -2167,7 +2179,7 @@ export function WhatsappChat() {
 
       {/* COLUMN 3: CUSTOMER PROFILE DETAILS (300px) */}
       {activeChat && (
-        <div className="w-72 border-l border-neutral-200 p-6 flex flex-col gap-6 overflow-y-auto dark:border-neutral-800 bg-white dark:bg-neutral-950 shrink-0">
+        <div className="w-72 border-l border-neutral-200 p-6 lg:flex flex-col gap-6 overflow-y-auto dark:border-neutral-800 bg-white dark:bg-neutral-950 shrink-0 hidden">
 
           {/* Avatar Area */}
           <div className="flex flex-col items-center text-center">

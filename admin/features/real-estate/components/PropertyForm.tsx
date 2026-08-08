@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Select } from "@/components/ui/select"
+import { formatCurrencyBRL, parseCurrencyBRL } from "@/lib/currency"
 import {
   ChevronLeft,
   Upload,
@@ -201,12 +203,12 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
         }
 
         if (prop.pricing) {
-          setRentPrice(prop.pricing.rentPrice ? String(prop.pricing.rentPrice) : "")
-          setSalePrice(prop.pricing.salePrice ? String(prop.pricing.salePrice) : "")
-          setCondominiumFee(prop.pricing.condominiumFee ? String(prop.pricing.condominiumFee) : "")
-          setPropertyTax(prop.pricing.propertyTax ? String(prop.pricing.propertyTax) : "")
-          setFireInsurance(prop.pricing.fireInsurance ? String(prop.pricing.fireInsurance) : "")
-          setServiceFee(prop.pricing.serviceFee ? String(prop.pricing.serviceFee) : "")
+          setRentPrice(formatCurrencyBRL(prop.pricing.rentPrice))
+          setSalePrice(formatCurrencyBRL(prop.pricing.salePrice))
+          setCondominiumFee(formatCurrencyBRL(prop.pricing.condominiumFee))
+          setPropertyTax(formatCurrencyBRL(prop.pricing.propertyTax))
+          setFireInsurance(formatCurrencyBRL(prop.pricing.fireInsurance))
+          setServiceFee(formatCurrencyBRL(prop.pricing.serviceFee))
         }
 
         if (prop.features) {
@@ -397,12 +399,12 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
         accessible,
       },
       pricing: {
-        rentPrice: rentPrice ? Number(rentPrice) : undefined,
-        salePrice: salePrice ? Number(salePrice) : undefined,
-        condominiumFee: condominiumFee ? Number(condominiumFee) : undefined,
-        propertyTax: propertyTax ? Number(propertyTax) : undefined,
-        fireInsurance: fireInsurance ? Number(fireInsurance) : undefined,
-        serviceFee: serviceFee ? Number(serviceFee) : undefined,
+        rentPrice: rentPrice ? parseCurrencyBRL(rentPrice) : undefined,
+        salePrice: salePrice ? parseCurrencyBRL(salePrice) : undefined,
+        condominiumFee: condominiumFee ? parseCurrencyBRL(condominiumFee) : undefined,
+        propertyTax: propertyTax ? parseCurrencyBRL(propertyTax) : undefined,
+        fireInsurance: fireInsurance ? parseCurrencyBRL(fireInsurance) : undefined,
+        serviceFee: serviceFee ? parseCurrencyBRL(serviceFee) : undefined,
       },
       features,
       condominium: {
@@ -454,7 +456,7 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
   ]
 
   return (
-    <form onSubmit={handleSave} className="space-y-6 max-w-5xl mx-auto p-6">
+    <form onSubmit={handleSave} className="space-y-6 max-w-5xl mx-auto py-6">
       {/* FORM TOP BAR */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-200 pb-5 dark:border-neutral-800">
         <div className="flex items-center gap-3">
@@ -506,11 +508,10 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
-                isActive
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${isActive
                   ? "border-neutral-900 text-neutral-900 dark:border-white dark:text-white"
                   : "border-transparent text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-              }`}
+                }`}
             >
               <Icon className="size-4" />
               {tab.label}
@@ -521,7 +522,7 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
 
       {/* TAB CONTENT CARDS */}
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-950">
-        
+
         {/* IDENTIFICAÇÃO */}
         {activeTab === "identificacao" && (
           <div className="space-y-6">
@@ -541,11 +542,10 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="type">Tipo do Imóvel</Label>
-                <select
+                <Select
                   id="type"
                   value={type}
                   onChange={(e) => setType(e.target.value as PropertyType)}
-                  className="w-full h-10 px-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
                 >
                   <option value="apartment">Apartamento</option>
                   <option value="house">Casa</option>
@@ -557,28 +557,26 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
                   <option value="commercial">Comercial</option>
                   <option value="land">Terreno</option>
                   <option value="farm">Chácara / Sítio</option>
-                </select>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="purpose">Finalidade</Label>
-                <select
+                <Select
                   id="purpose"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value as PropertyPurpose)}
-                  className="w-full h-10 px-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
                 >
                   <option value="sale">Venda</option>
                   <option value="rent">Locação</option>
                   <option value="rent_and_sale">Venda ou Locação</option>
-                </select>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="status">Status do Anúncio</Label>
-                <select
+                <Select
                   id="status"
                   value={status}
                   onChange={(e) => setStatus(e.target.value as PropertyStatus)}
-                  className="w-full h-10 px-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
                 >
                   <option value="draft">Rascunho</option>
                   <option value="active">Ativo (Anunciado)</option>
@@ -586,7 +584,7 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
                   <option value="rented">Alugado</option>
                   <option value="sold">Vendido</option>
                   <option value="reserved">Reservado</option>
-                </select>
+                </Select>
               </div>
               <div className="space-y-1.5 md:col-span-2">
                 <Label htmlFor="description">Descrição Detalhada</Label>
@@ -653,7 +651,7 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
         {activeTab === "areas" && (
           <div className="space-y-6">
             <h3 className="font-bold text-lg text-neutral-900 dark:text-neutral-50">Medidas e Compartimentos</h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-neutral-100 pb-5 dark:border-neutral-800">
               <div className="space-y-1.5">
                 <Label htmlFor="totalArea">Área Total (m²)</Label>
@@ -705,28 +703,28 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
             <h3 className="font-bold text-lg text-neutral-900 dark:text-neutral-50">Valores Comerciais</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-neutral-100 pb-5 dark:border-neutral-800">
               <div className="space-y-1.5">
-                <Label htmlFor="salePrice">Preço de Venda (R$)</Label>
-                <Input id="salePrice" type="number" placeholder="Ex: 750000" value={salePrice} onChange={(e) => setSalePrice(e.target.value)} />
+                <Label htmlFor="salePrice">Preço de Venda</Label>
+                <Input id="salePrice" type="text" placeholder="Ex: R$ 750.000,00" value={salePrice} onChange={(e) => setSalePrice(formatCurrencyBRL(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="rentPrice">Preço de Locação (R$ / mês)</Label>
-                <Input id="rentPrice" type="number" placeholder="Ex: 3500" value={rentPrice} onChange={(e) => setRentPrice(e.target.value)} />
+                <Label htmlFor="rentPrice">Preço de Locação / mês</Label>
+                <Input id="rentPrice" type="text" placeholder="Ex: R$ 3.500,00" value={rentPrice} onChange={(e) => setRentPrice(formatCurrencyBRL(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="condominiumFee">Condomínio (R$)</Label>
-                <Input id="condominiumFee" type="number" placeholder="Ex: 600" value={condominiumFee} onChange={(e) => setCondominiumFee(e.target.value)} />
+                <Label htmlFor="condominiumFee">Condomínio</Label>
+                <Input id="condominiumFee" type="text" placeholder="Ex: R$ 600,00" value={condominiumFee} onChange={(e) => setCondominiumFee(formatCurrencyBRL(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="propertyTax">IPTU (R$)</Label>
-                <Input id="propertyTax" type="number" placeholder="Ex: 120" value={propertyTax} onChange={(e) => setPropertyTax(e.target.value)} />
+                <Label htmlFor="propertyTax">IPTU</Label>
+                <Input id="propertyTax" type="text" placeholder="Ex: R$ 120,00" value={propertyTax} onChange={(e) => setPropertyTax(formatCurrencyBRL(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="fireInsurance">Seguro Incêndio (R$)</Label>
-                <Input id="fireInsurance" type="number" placeholder="Ex: 45" value={fireInsurance} onChange={(e) => setFireInsurance(e.target.value)} />
+                <Label htmlFor="fireInsurance">Seguro Incêndio</Label>
+                <Input id="fireInsurance" type="text" placeholder="Ex: R$ 45,00" value={fireInsurance} onChange={(e) => setFireInsurance(formatCurrencyBRL(e.target.value))} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="serviceFee">Taxa de Serviço imobiliário (R$)</Label>
-                <Input id="serviceFee" type="number" placeholder="Ex: 100" value={serviceFee} onChange={(e) => setServiceFee(e.target.value)} />
+                <Label htmlFor="serviceFee">Taxa de Serviço imobiliário</Label>
+                <Input id="serviceFee" type="text" placeholder="Ex: R$ 100,00" value={serviceFee} onChange={(e) => setServiceFee(formatCurrencyBRL(e.target.value))} />
               </div>
             </div>
 
@@ -734,16 +732,15 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-neutral-100 pb-5 dark:border-neutral-800">
               <div className="space-y-1.5">
                 <Label htmlFor="furnishing">Mobiliado</Label>
-                <select
+                <Select
                   id="furnishing"
                   value={furnishing}
                   onChange={(e) => setFurnishing(e.target.value as FurnishingType)}
-                  className="w-full h-10 px-3 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950 text-sm focus:outline-hidden"
                 >
                   <option value="unfurnished">Sem mobília</option>
                   <option value="semi_furnished">Semi-mobiliado</option>
                   <option value="furnished">Mobiliado</option>
-                </select>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="floor">Número do Andar</Label>
@@ -880,7 +877,7 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
           <div className="space-y-6">
             <h3 className="font-bold text-lg text-neutral-900 dark:text-neutral-50">Imagens do Anúncio</h3>
             <div className="space-y-4">
-              
+
               {/* Dropzone */}
               <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 p-6 text-center dark:border-neutral-800 relative hover:border-neutral-400 dark:hover:border-neutral-700 transition-colors cursor-pointer">
                 <Upload className="size-8 text-neutral-400 mb-2" />
@@ -916,7 +913,7 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
                     <div key={img.id} className="group relative h-28 rounded-xl border border-neutral-200 bg-neutral-50 overflow-hidden dark:border-neutral-800">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img.url} alt="Foto" className="h-full w-full object-cover" />
-                      
+
                       {/* Controls overlay */}
                       <div className="absolute inset-0 bg-neutral-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
                         <div className="flex justify-end">
@@ -932,11 +929,10 @@ export function PropertyForm({ propertyId }: PropertyFormProps) {
                         <button
                           type="button"
                           onClick={() => handleSetCoverImage(img.id)}
-                          className={`w-full text-[10px] font-bold py-1 px-1.5 rounded-md flex items-center justify-center gap-1 ${
-                            img.isCover
+                          className={`w-full text-[10px] font-bold py-1 px-1.5 rounded-md flex items-center justify-center gap-1 ${img.isCover
                               ? "bg-emerald-500 text-neutral-950"
                               : "bg-white/80 text-neutral-950 hover:bg-white"
-                          }`}
+                            }`}
                         >
                           {img.isCover ? (
                             <>

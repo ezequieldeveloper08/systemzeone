@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select } from "@/components/ui/select"
+import { formatCurrencyBRL, parseCurrencyBRL } from "@/lib/currency"
 import {
   ChevronLeft,
   Upload,
@@ -69,8 +70,8 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
   const [model, setModel] = useState("")
   const [year, setYear] = useState<number>(new Date().getFullYear())
   const [description, setDescription] = useState("")
-  const [price, setPrice] = useState<number>(0)
-  const [salePrice, setSalePrice] = useState<number | undefined>(undefined)
+  const [price, setPrice] = useState<string>("")
+  const [salePrice, setSalePrice] = useState<string>("")
   const [status, setStatus] = useState<"published" | "hidden">("published")
   const [images, setImages] = useState<string[]>([])
   const [km, setKm] = useState<number>(0)
@@ -211,7 +212,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
 
     // Set price
     if (selectedPrice.numericPrice) {
-      setPrice(selectedPrice.numericPrice)
+      setPrice(formatCurrencyBRL(selectedPrice.numericPrice))
     }
 
     // Set fuel
@@ -237,8 +238,8 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
         setModel(vehicle.model)
         setYear(vehicle.year)
         setDescription(vehicle.description)
-        setPrice(vehicle.price)
-        setSalePrice(vehicle.salePrice)
+        setPrice(formatCurrencyBRL(vehicle.price))
+        setSalePrice(formatCurrencyBRL(vehicle.salePrice))
         setStatus(vehicle.status)
         setImages(vehicle.images)
         setKm(vehicle.km)
@@ -350,7 +351,7 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
       setError("O modelo do veículo é obrigatório.")
       return
     }
-    if (price <= 0) {
+    if (parseCurrencyBRL(price) <= 0) {
       setError("Por favor, insira um preço válido.")
       return
     }
@@ -363,8 +364,8 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
       model,
       year: Number(year),
       description,
-      price: Number(price),
-      salePrice: salePrice ? Number(salePrice) : undefined,
+      price: parseCurrencyBRL(price),
+      salePrice: salePrice ? parseCurrencyBRL(salePrice) : undefined,
       status,
       images,
       km: Number(km),
@@ -620,10 +621,10 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
                 <Label htmlFor="price">Preço Base de Venda</Label>
                 <Input
                   id="price"
-                  type="number"
-                  placeholder="Ex: 1250000"
-                  value={price || ""}
-                  onChange={(e) => setPrice(Number(e.target.value))}
+                  type="text"
+                  placeholder="Ex: R$ 125.000,00"
+                  value={price}
+                  onChange={(e) => setPrice(formatCurrencyBRL(e.target.value))}
                   required
                 />
               </div>
@@ -631,10 +632,10 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
                 <Label htmlFor="salePrice">Preço Promocional (Opcional)</Label>
                 <Input
                   id="salePrice"
-                  type="number"
-                  placeholder="Ex: 1190000"
-                  value={salePrice || ""}
-                  onChange={(e) => setSalePrice(e.target.value ? Number(e.target.value) : undefined)}
+                  type="text"
+                  placeholder="Ex: R$ 119.000,00"
+                  value={salePrice}
+                  onChange={(e) => setSalePrice(formatCurrencyBRL(e.target.value))}
                 />
               </div>
             </div>
@@ -728,46 +729,43 @@ export function VehicleForm({ vehicleId }: VehicleFormProps) {
               <div className="grid grid-cols-1 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-semibold text-neutral-400 uppercase">Marca FIPE</label>
-                  <select
+                  <Select
                     value={fipeBrandId}
                     onChange={(e) => handleFipeBrandChange(e.target.value)}
-                    className="w-full rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200"
                   >
                     <option value="">Selecione...</option>
                     {fipeBrands.map((b) => (
                       <option key={b.id} value={b.id}>{b.name}</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-semibold text-neutral-400 uppercase">Modelo FIPE</label>
-                  <select
+                  <Select
                     value={fipeModelId}
                     onChange={(e) => handleFipeModelChange(e.target.value)}
                     disabled={!fipeBrandId}
-                    className="w-full rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 disabled:opacity-50"
                   >
                     <option value="">Selecione...</option>
                     {fipeModels.map((m) => (
                       <option key={m.id} value={m.id}>{m.name}</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-semibold text-neutral-400 uppercase">Ano / Versão FIPE</label>
-                  <select
+                  <Select
                     value={fipePriceId}
                     onChange={(e) => setFipePriceId(e.target.value)}
                     disabled={!fipeModelId}
-                    className="w-full rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 disabled:opacity-50"
                   >
                     <option value="">Selecione...</option>
                     {fipePrices.map((p) => (
                       <option key={p.id} value={p.id}>{p.yearName} ({p.price})</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </div>
 
